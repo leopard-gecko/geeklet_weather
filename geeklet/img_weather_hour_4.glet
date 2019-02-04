@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>DisplayID</key>
+	<integer>1892209153</integer>
+	<key>GeekletFrame</key>
+	<string>{{903.1796875, 191}, {30, 30}}</string>
+	<key>HasShadow</key>
+	<false/>
+	<key>Identifier</key>
+	<string>org.tynsoe.geeklet.image</string>
+	<key>ImageURL</key>
+	<string>file://localhost/private/tmp/weather_hour_4.png</string>
+	<key>Name</key>
+	<string>img_weather_hour_4</string>
+	<key>RefreshInterval</key>
+	<integer>600</integer>
+</dict>
+</plist>
