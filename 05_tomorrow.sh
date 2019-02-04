@@ -11,7 +11,7 @@ weather_data=`curl  -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X)' --s
 
 # 明日（または早朝）の天気を表示
 echo "$weather_data" | grep -e 'Tomorrow\|Early' | sed -e 's/<[^>]*>//g'  -e 's/^ *//' -e 's/[[:cntrl:]]//g' | awk -v t_color="$T_COLOR" '{print "\x1b["t_color"m"$0"\x1b[0m"}'
-echo "$weather_data" | grep -A 9 'Tomorrow\|Early' | grep  -e 'large-temp\|cond' | sed -e 's/<[^>]*>//g' | sed -e 's/&deg;/°/g' -e 's/^ *//' -e 's/[[:cntrl:]]//g' | tr "\r\n" " "
+echo "$weather_data" | grep -A 9 'Tomorrow\|Early' | grep  -e 'large-temp\|cond' | sed -e 's/<[^>]*>//g' -e 's/&deg;/°/g' -e 's/^ *//' -e 's/[[:cntrl:]]//g' | tr "\r\n" " "
 
 # 明日の天気アイコンのナンバーを取得しゼロパディングする
 icon_data=`echo "$weather_data" | grep -A 2 'Tomorrow\|Early' | grep 'icon' | sed -e 's/[^"]*"\([^"]*\)".*/\1/' | tr -cd '0123456789' | awk '{printf "%02d", $1}'`
