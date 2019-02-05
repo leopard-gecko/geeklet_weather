@@ -13,16 +13,13 @@
 # 場所のURL
 weather_url="https://www.accuweather.com/en/jp/koto-ku/221230/weather-forecast/221230"
 
-# プロキシ
-weather_proxy=""
-
 # amとpmの色  30 黒、31 赤、32 緑、33 黄、34 青、35 マゼンタ、36 シアン、37 白
 AM_COLOR=31
 PM_COLOR=34
 
 # 元データ取得
 my_hour=`date +%H`
-curl_data=`curl  -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X)' $weather_proxy --silent ${weather_url/weather-forecast/hourly-weather-forecast}"?hour=$my_hour"`
+curl_data=`curl  -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X)' --silent ${weather_url/weather-forecast/hourly-weather-forecast}"?hour=$my_hour"`
 
 # ８時間分の時刻を取得（後で配列変数として使う。以下同様）
 current_time=(`echo "$curl_data" | grep -A 37 "overview-hourly" | grep -A 29 "first-col" | sed -e 's/&lt;[^&gt;]*&gt;//g' -e 's/^ *//' | tr -d "\r"`) 
@@ -54,7 +51,7 @@ done
 for (( i=0; i &lt; ${#current_icon[@]}; ++i))
 do
 current_icon[$i]=`printf "%02d" ${current_icon[$i]}`
-echo "https://vortex.accuweather.com/adc2010/images/slate/icons/${current_icon[$i]}-s.png" | xargs curl $weather_proxy --silent -o /tmp/weather_hour_$i.png
+echo "https://vortex.accuweather.com/adc2010/images/slate/icons/${current_icon[$i]}-s.png" | xargs curl --silent -o /tmp/weather_hour_$i.png
 done</string>
 	<key>DisplayID</key>
 	<integer>1892209153</integer>
@@ -152,9 +149,9 @@ done</string>
 	ivgZ+Kj5OPnH+lf65/t3/Af8mP0p/br+S/7c/23//w==
 	</data>
 	<key>FontFamily</key>
-	<string>Osaka-Mono</string>
+	<string>Monaco</string>
 	<key>FontSize</key>
-	<real>18</real>
+	<real>15</real>
 	<key>GeekletFrame</key>
 	<string>{{615, 225.65625}, {581, 65}}</string>
 	<key>HasShadow</key>
