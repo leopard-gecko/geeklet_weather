@@ -14,6 +14,6 @@ echo "$weather_data" | grep -e '>Tomorrow<\|>Early AM<' | sed -e 's/<[^>]*>//g' 
 echo "$weather_data" | grep -A 9 '>Tomorrow<\|>Early AM<' | grep  -e 'large-temp\|cond' | sed -e 's/<[^>]*>//g' -e 's/&deg;/°/g' -e 's/^ *//' -e 's/[[:cntrl:]]//g' | tr "\r\n" " "
 
 # 明日の天気アイコンのナンバーを取得しゼロパディングする
-icon_data=`echo "$weather_data" | grep -A 2 'Tomorrow\|>Early AM<' | grep 'icon' | sed -e 's/[^"]*"\([^"]*\)".*/\1/' | tr -cd '0123456789' | awk '{printf "%02d", $1}'`
+icon_data=`echo "$weather_data" | grep -A 2 '>Tomorrow<\|>Early AM<' | grep 'icon' | sed -e 's/[^"]*"\([^"]*\)".*/\1/' | tr -cd '0123456789' | awk '{printf "%02d", $1}'`
 
 echo "https://vortex.accuweather.com/adc2010/images/slate/icons/"$icon_data"-l.png" | xargs curl --silent -o /tmp/weather_tomorrow.png
