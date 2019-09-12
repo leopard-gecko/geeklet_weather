@@ -3,25 +3,48 @@
 <plist version="1.0">
 <dict>
 	<key>Command</key>
-	<string># 現在の温度と天気のスクリプト
+	<string># 週末の天気のスクリプト
 
 # 場所のURL
 weather_url="https://www.accuweather.com/en/jp/koto-ku/221230/weather-forecast/221230"
 
+# 土曜日と日曜日の色 （30 黒、31 赤、32 緑、33 黄、34 青、35 マゼンタ、36 シアン、37 白、0 デフォルト）
+SAT_COLOR=44
+SUN_COLOR=41
+
+# 天気の詳細（10 簡略表示、14 詳細表示）
+detail=14
+
 # 元データ取得
 weather_data=`curl -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X)' --silent $weather_url`
+daily_data=`echo "$weather_data" | grep -e 'dailyForecast' | tr '{|}' '\n'`
+sat_data=`echo "$daily_data" | grep -A1 -B2 -m2 'Saturday' | sed -n 1,4p`
+sun_data=`echo "$daily_data" | grep -A1 -B2 -m2 'Sunday' | sed -n 1,4p`
 
-# 現在の温度と天気を取得して表示
-echo "$weather_data" | grep -e 'curCon' | awk -F\" '{print $14,$10}'
+# 土日の最高・最低気温と天気を表示
+sat_hi=`echo "$sat_data" | grep -A1 -m2 '"day"' | sed -n 2p | awk -F\" '{print $4}'`
+sat_lo=`echo "$sat_data" | grep -A1 -m2 '"night"' | sed -n 2p | awk -F\" '{print $4}'`
+sun_hi=`echo "$sun_data" | grep -A1 -m2 '"day"' | sed -n 2p | awk -F\" '{print $4}'`
+sun_lo=`echo "$sun_data" | grep -A1 -m2 '"night"' | sed -n 2p | awk -F\" '{print $4}'`
 
-# 天気アイコンのナンバーを取得し二桁でゼロパディングする
-icon_cur=`echo "$weather_data" | grep -e 'curCon' | sed -e 's/.*\"icon\":\([0-9]*\).*/\1/' | tr -cd '0123456789' | awk '{printf "%02d", $1}'`
+echo "\033[0;${SAT_COLOR}mSaturday\033[0m"
+printf "$sat_hi/$sat_lo "
+echo "$sat_data" | grep 'phrase' | awk -v "det=${detail}" -F\" '{print $det}' | sed -n 1p
 
-# 天気アイコンナンバーをURLに変換して画像を保存
-echo "https://vortex.accuweather.com/adc2010/images/icons-numbered/"$icon_cur"-xl.png" | xargs curl --silent -o /tmp/weather_now.png
+echo "\033[0;${SUN_COLOR}mSunday\033[0m"
+printf "$sun_hi/$sun_lo "
+echo "$sun_data" | grep 'phrase' | awk -v "det=${detail}" -F\" '{print $det}' | sed -n 1p
 
-# アイコンのURLはこれでも良い
-# https://vortex.accuweather.com/adc2010/images/slate/icons/40-xl.png</string>
+
+
+# 週末の天気アイコン取得して画像を保存（取得するアイコンのナンバーはゼロパディングする）
+icon_sat=`echo "$weather_weekend" | grep -e 'dailyForecast' | tr '{|}' '\n' | grep -B1 -m1 'Saturday' | sed -n 1p | sed -e 's/.*\"icon\":\([0-9]*\).*/\1/' | tr -cd '0123456789' | awk '{printf "%02d", $1}'`
+icon_sat=`printf "%.2d\n" $icon_sat`
+icon_sun=`echo "$weather_weekend" | grep -e 'dailyForecast' | tr '{|}' '\n' | grep -B1 -m1 'Sunday' | sed -n 1p | sed -e 's/.*\"icon\":\([0-9]*\).*/\1/' | tr -cd '0123456789' | awk '{printf "%02d", $1}'`
+icon_sun=`printf "%.2d\n" $icon_sun`
+
+echo "https://vortex.accuweather.com/adc2010/images/slate/icons/"$icon_sat"-l.png" | xargs curl --silent -o /tmp/weather_sat.png
+echo "https://vortex.accuweather.com/adc2010/images/slate/icons/"$icon_sun"-l.png" | xargs curl --silent -o /tmp/weather_sun.png</string>
 	<key>DisplayID</key>
 	<integer>1892209665</integer>
 	<key>DisplayStatusImage</key>
@@ -118,19 +141,19 @@ echo "https://vortex.accuweather.com/adc2010/images/icons-numbered/"$icon_cur"-x
 	ivgZ+Kj5OPnH+lf65/t3/Af8mP0p/br+S/7c/23//w==
 	</data>
 	<key>FontFamily</key>
-	<string>HelveticaNeue-UltraLight</string>
+	<string>HiraginoSans-W3</string>
 	<key>FontSize</key>
-	<real>76</real>
+	<real>18</real>
 	<key>GeekletFrame</key>
-	<string>{{840, 90}, {935.24609375, 95.94921875}}</string>
+	<string>{{690, 487}, {729, 116}}</string>
 	<key>HasShadow</key>
 	<false/>
 	<key>Identifier</key>
 	<string>org.tynsoe.geeklet.shell</string>
 	<key>Name</key>
-	<string>00_current</string>
+	<string>06_weekend</string>
 	<key>RefreshInterval</key>
-	<integer>300</integer>
+	<integer>3600</integer>
 	<key>SetLocale</key>
 	<true/>
 	<key>StatusImagePosition</key>
@@ -226,8 +249,8 @@ echo "https://vortex.accuweather.com/adc2010/images/icons-numbered/"$icon_cur"-x
 	</data>
 	<key>TextColor</key>
 	<data>
-	BAtzdHJlYW10eXBlZIHoA4QBQISEhAdOU0NvbG9yAISECE5TT2JqZWN0AIWEAWMBhARm
-	ZmZmAQEBgwqSDD+G
+	BAtzdHJlYW10eXBlZIHoA4QBQISEhAdOU0NvbG9yAISECE5TT2JqZWN0AIWEAWMEhAJm
+	ZgGDAAAAP4Y=
 	</data>
 	<key>TextStrikethrough</key>
 	<integer>0</integer>

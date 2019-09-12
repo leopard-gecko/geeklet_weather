@@ -3,9 +3,9 @@
 <plist version="1.0">
 <dict>
 	<key>DisplayID</key>
-	<integer>1892209153</integer>
+	<integer>1892209665</integer>
 	<key>GeekletFrame</key>
-	<string>{{834, 290}, {30, 30}}</string>
+	<string>{{894, 290}, {30, 30}}</string>
 	<key>HasShadow</key>
 	<false/>
 	<key>Identifier</key>

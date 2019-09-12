@@ -8,16 +8,13 @@
 # 場所のURL
 weather_url="https://www.accuweather.com/en/jp/koto-ku/221230/weather-forecast/221230"
 
-# プロキシ
-weather_proxy=""
-
 # 元データ取得
-weather_data=`curl -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X)' $weather_proxy --silent ${weather_url/weather-forecast/minute-weather-forecast}`
+weather_data=`curl -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X)' --silent $weather_url`
 
 # MINUTECASTを取得して表示
-echo "$weather_data" | grep -A 2 'mc-summary' | grep '&lt;p&gt;' | sed -e 's/&lt;[^&gt;]*&gt;//g' | tr -s ' ' ' ' | grep -v -e 'No precipitation' -e 'temporarily unavailable'</string>
+echo "$weather_data" | grep -e 'minuteCastSummary' | awk -F\" '{print $4}' | grep -v -e 'No precipitation' -e 'temporarily unavailable'</string>
 	<key>DisplayID</key>
-	<integer>1892209153</integer>
+	<integer>1892209665</integer>
 	<key>DisplayStatusImage</key>
 	<false/>
 	<key>DropShadow</key>
@@ -117,7 +114,7 @@ echo "$weather_data" | grep -A 2 'mc-summary' | grep '&lt;p&gt;' | sed -e 's/&lt
 	<key>FontSize</key>
 	<real>24</real>
 	<key>GeekletFrame</key>
-	<string>{{990, 43.33984375}, {616, 45}}</string>
+	<string>{{990, 44}, {616, 45}}</string>
 	<key>HasShadow</key>
 	<false/>
 	<key>Identifier</key>
