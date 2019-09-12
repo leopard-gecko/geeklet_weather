@@ -8,7 +8,7 @@
 	ZgAAhg==
 	</data>
 	<key>Command</key>
-	<string># 現在時刻から７時間後までのスクリプト
+	<string># ８時間後から１６時間後までのスクリプト
 
 # 場所のURL
 weather_url="https://www.accuweather.com/en/jp/koto-ku/221230/weather-forecast/221230"
@@ -18,7 +18,7 @@ AM_COLOR=31
 PM_COLOR=34
 
 # 何時間後？ (時間をずらしたい場合はlaterの後の数字を書き換える)
-later=0
+later=8
 
 # 元データ取得
 my_hour=`date +%H`
@@ -66,7 +66,7 @@ current_icon[$i]=`printf "%02d" ${current_icon[$i]}`
 echo "https://vortex.accuweather.com/adc2010/images/slate/icons/${current_icon[$i]}-s.png" | xargs curl --silent -o /tmp/weather_hour_`expr $i + $later`.png
 done</string>
 	<key>DisplayID</key>
-	<integer>1892209665</integer>
+	<integer>69731072</integer>
 	<key>DisplayStatusImage</key>
 	<false/>
 	<key>DropShadow</key>
@@ -165,7 +165,7 @@ done</string>
 	<key>FontSize</key>
 	<real>11</real>
 	<key>GeekletFrame</key>
-	<string>{{615, 227}, {722, 62}}</string>
+	<string>{{614.82421875, 326.9296875}, {722, 62}}</string>
 	<key>HasShadow</key>
 	<false/>
 	<key>Identifier</key>
