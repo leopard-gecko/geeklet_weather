@@ -1,4 +1,4 @@
-# ８時間後から１６時間後までのスクリプト
+# ８時間後から１５時間後までのスクリプト
 
 # 場所のURL
 weather_url="https://www.accuweather.com/en/jp/koto-ku/221230/weather-forecast/221230"
