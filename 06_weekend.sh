@@ -7,34 +7,36 @@ weather_url="https://www.accuweather.com/en/jp/koto-ku/221230/weather-forecast/2
 SAT_COLOR=44
 SUN_COLOR=41
 
-# 天気の詳細（10 簡略表示、14 詳細表示）
-detail=14
+# 天気の詳細（phrase 簡略表示、longPhrase 詳細表示）
+detail=longPhrase
 
-# 元データ取得
+# 元データ取得（日曜日の場合は翌週の週末を取得する）
 weather_data=`curl -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X)' --silent $weather_url`
 daily_data=`echo "$weather_data" | grep -e 'dailyForecast' | tr '{|}' '\n'`
-sat_data=`echo "$daily_data" | grep -A1 -B2 -m2 'Saturday' | sed -n 1,4p`
-sun_data=`echo "$daily_data" | grep -A1 -B2 -m2 'Sunday' | sed -n 1,4p`
+sat_data=`echo "$daily_data" | grep -A3 $(date -v+$(expr 6 - $(date +%w))d +%Y-%m-%d) | tr ',' '\n' | tr -d '"'`
+sun_data=`echo "$daily_data" | grep -A3 $(date -v+$(expr 7 - $(date +%w))d +%Y-%m-%d) | tr ',' '\n' | tr -d '"'`
 
 # 土日の最高・最低気温と天気を表示
-sat_hi=`echo "$sat_data" | grep -A1 -m2 '"day"' | sed -n 2p | awk -F\" '{print $4}'`
-sat_lo=`echo "$sat_data" | grep -A1 -m2 '"night"' | sed -n 2p | awk -F\" '{print $4}'`
-sun_hi=`echo "$sun_data" | grep -A1 -m2 '"day"' | sed -n 2p | awk -F\" '{print $4}'`
-sun_lo=`echo "$sun_data" | grep -A1 -m2 '"night"' | sed -n 2p | awk -F\" '{print $4}'`
+sat_hi=`echo "$sat_data" | grep -A1 'day:' | grep 'dTemp' | awk -F: '{print $2}'`
+sat_lo=`echo "$sat_data" | grep -A1 'night:' | grep 'dTemp' | awk -F: '{print $2}'`
+sun_hi=`echo "$sun_data" | grep -A1 'day:' | grep 'dTemp' | awk -F: '{print $2}'`
+sun_lo=`echo "$sun_data" | grep -A1 'night:' | grep 'dTemp' | awk -F: '{print $2}'`
 
-echo "\033[0;${SAT_COLOR}mSaturday\033[0m"
-printf "$sat_hi/$sat_lo "
-echo "$sat_data" | grep 'phrase' | awk -v "det=${detail}" -F\" '{print $det}' | sed -n 1p
+printf "\033[0;${SAT_COLOR}mSaturday\033[0m"
+# printf "   $(echo "$sat_data" | grep -m1 'date' | awk -F: '{print $2}')"
+echo
+printf "%s/%s " $sat_hi $sat_lo
+echo "$sat_data" | grep -m1 "$detail" | awk -F: '{print $2}'
 
-echo "\033[0;${SUN_COLOR}mSunday\033[0m"
-printf "$sun_hi/$sun_lo "
-echo "$sun_data" | grep 'phrase' | awk -v "det=${detail}" -F\" '{print $det}' | sed -n 1p
+printf "\033[0;${SUN_COLOR}mSunday\033[0m"
+# printf "     $(echo "$sun_data" | grep -m1 'date' | awk -F: '{print $2}')"
+echo
+printf "%s/%s " $sun_hi $sun_lo
+echo "$sun_data" | grep -m1 "$detail" | awk -F: '{print $2}'
 
 # 週末の天気アイコン取得して画像を保存（取得するアイコンのナンバーはゼロパディングする）
-icon_sat=`echo "$sat_data" | grep -m1 'icon' | sed -e 's/.*\"icon\":\([0-9]*\).*/\1/' | tr -cd '0123456789' | awk '{printf "%02d", $1}'`
-icon_sat=`printf "%.2d\n" $icon_sat`
-icon_sun=`echo "$sun_data" | grep -m1 'icon' | sed -e 's/.*\"icon\":\([0-9]*\).*/\1/' | tr -cd '0123456789' | awk '{printf "%02d", $1}'`
-icon_sun=`printf "%.2d\n" $icon_sun`
+icon_sat=`echo "$sat_data" | grep -m1 'icon' | awk -F: '{printf "%02d",$2}'`
+icon_sun=`echo "$sun_data" | grep -m1 'icon' | awk -F: '{printf "%02d",$2}'`
 
 echo "https://vortex.accuweather.com/adc2010/images/slate/icons/"$icon_sat"-l.png" | xargs curl --silent -o /tmp/weather_sat.png
 echo "https://vortex.accuweather.com/adc2010/images/slate/icons/"$icon_sun"-l.png" | xargs curl --silent -o /tmp/weather_sun.png
