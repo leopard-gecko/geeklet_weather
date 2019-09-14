@@ -123,7 +123,7 @@ echo "https://vortex.accuweather.com/adc2010/images/icons-numbered/"$icon_cur"-x
 	<key>FontSize</key>
 	<real>76</real>
 	<key>GeekletFrame</key>
-	<string>{{840, 90.33984375}, {936, 96}}</string>
+	<string>{{840, 71}, {936, 96}}</string>
 	<key>HasShadow</key>
 	<false/>
 	<key>Identifier</key>

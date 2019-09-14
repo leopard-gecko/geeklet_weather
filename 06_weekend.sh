@@ -10,6 +10,9 @@ SUN_COLOR=41
 # 天気の詳細（phrase 簡略表示、longPhrase 詳細表示）
 detail=longPhrase
 
+# 日付を表示する？（1 表示する、0 表示しない）
+date_b=0
+
 # 元データ取得（日曜日の場合は翌週の週末を取得する）
 weather_data=`curl -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X)' --silent $weather_url`
 daily_data=`echo "$weather_data" | grep -e 'dailyForecast' | tr '{|}' '\n'`
@@ -23,13 +26,13 @@ sun_hi=`echo "$sun_data" | grep -A1 'day:' | grep 'dTemp' | awk -F: '{print $2}'
 sun_lo=`echo "$sun_data" | grep -A1 'night:' | grep 'dTemp' | awk -F: '{print $2}'`
 
 printf "\033[0;${SAT_COLOR}mSaturday\033[0m"
-# printf "   $(echo "$sat_data" | grep -m1 'date' | awk -F: '{print $2}')"
+[ $date_b -eq 1 ] && printf " ($(echo "$sat_data" | grep -m1 'date' | awk -F: '{print $2}'))"
 echo
 printf "%s/%s " $sat_hi $sat_lo
 echo "$sat_data" | grep -m1 "$detail" | awk -F: '{print $2}'
 
 printf "\033[0;${SUN_COLOR}mSunday\033[0m"
-# printf "     $(echo "$sun_data" | grep -m1 'date' | awk -F: '{print $2}')"
+[ $date_b -eq 1 ] && printf "   ($(echo "$sun_data" | grep -m1 'date' | awk -F: '{print $2}'))"
 echo
 printf "%s/%s " $sun_hi $sun_lo
 echo "$sun_data" | grep -m1 "$detail" | awk -F: '{print $2}'

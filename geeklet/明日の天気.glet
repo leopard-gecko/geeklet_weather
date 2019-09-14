@@ -9,7 +9,7 @@
 weather_url="https://www.accuweather.com/en/jp/koto-ku/221230/weather-forecast/221230"
 
 # Tomorrowの色 （30 黒、31 赤、32 緑、33 黄、34 青、35 マゼンタ、36 シアン、37 白、0 デフォルト）
-T_COLOR=40
+T_COLOR="40"
 
 # 天気の詳細（phrase 簡略表示、longPhrase 詳細表示）
 detail=longPhrase
@@ -133,7 +133,7 @@ echo "https://vortex.accuweather.com/adc2010/images/slate/icons/"$icon_data"-l.p
 	<key>FontSize</key>
 	<real>18</real>
 	<key>GeekletFrame</key>
-	<string>{{690, 410}, {880.8671875, 63.87109375}}</string>
+	<string>{{690, 410}, {882, 65}}</string>
 	<key>HasShadow</key>
 	<false/>
 	<key>Identifier</key>
