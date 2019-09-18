@@ -16,5 +16,5 @@ icon_cur=`echo "$cur_data"| grep 'icon' | awk -F: '{printf "%02d",$2}'`
 # 天気アイコンナンバーをURLに変換して画像を保存
 echo "https://vortex.accuweather.com/adc2010/images/icons-numbered/"$icon_cur"-xl.png" | xargs curl --silent -o /tmp/weather_now.png
 
-# アイコンのURLはこれでも良い
-# https://vortex.accuweather.com/adc2010/images/slate/icons/40-xl.png
+# シンプルなデザインの天気アイコンを使いたい場合はこれに書き換える
+# https://vortex.accuweather.com/adc2010/images/slate/icons/"$icon_cur"-xl.png" 
