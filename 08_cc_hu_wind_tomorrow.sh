@@ -16,7 +16,7 @@ precip=1        #降水確率
 line_feed=0
 
 # 取得するデータの整理
-if [ $uv_index -eq 1 ];    then ui='uv:';         else ui=''; fi
+if [ $uv_index -eq 1 ];    then ui='uv:';         else ui='Dummy'; fi
 if [ $cloud_cover -eq 1 ]; then cc='cc:';         else cc='Dummy'; fi
 if [ $wind -eq 1 ];        then wi='\|wind:';     else wi=''; fi
 if [ $precip -eq 1 ];      then pr='\|precip:';   else pr=''; fi
