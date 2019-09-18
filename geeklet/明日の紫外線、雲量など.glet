@@ -3,19 +3,43 @@
 <plist version="1.0">
 <dict>
 	<key>Command</key>
-	<string># 雲量、湿度、風速・風向きのスクリプト
+	<string># 明日の紫外線、雲量、風速・風向き、降水確率のスクリプト
 
 # 場所のURL
 weather_url="https://www.accuweather.com/en/jp/koto-ku/221230/weather-forecast/221230"
 
+# 何日後？
+later=1
+
+# 取得したいデータ（0 取得しない、1 取得する）
+uv_index=1      #紫外線
+cloud_cover=1   #雲量
+wind=1          #風速・風向き
+precip=1        #降水確率
+
+# 改行表示（0 改行しない、1 改行する）
+line_feed=0
+
+# 取得するデータの整理
+if [ $uv_index -eq 1 ];    then ui='uv:';         else ui='Dummy'; fi
+if [ $cloud_cover -eq 1 ]; then cc='cc:';         else cc='Dummy'; fi
+if [ $wind -eq 1 ];        then wi='\|wind:';     else wi=''; fi
+if [ $precip -eq 1 ];      then pr='\|precip:';   else pr=''; fi
+
+if [ $line_feed -eq 1 ]; then lf='\\n'; else lf='\\t'; fi
+
 # 元データ取得
-weather_data=`curl -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X)' --silent ${weather_url/weather-forecast/current-weather}`
-cur_data=`echo "$weather_data" | grep 'curCon' | tr '{|}' '\n' | tr ',' '\n' | tr -d '"'`
+weather_data=$(curl -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X)' --silent ${weather_url/weather-forecast/daily-weather-forecast}?day=$(($later)))
+tomorrow_data=$(echo "$weather_data" | grep 'var today' | tr '{|}' '\n' | sed s/',"'/\\$'\n'/g | tr -d '"' | awk '/date:/,/lDate:/')
 
 # 現在の雲量、湿度、風速・風向きを取得して表示
-echo "$cur_data" | grep 'cc:\|humidity:\|wind:' | tr '\n' '\t' | sed -e s/cc:/'Cloud Cover: '/g -e s/humidity:/'Humidity: '/g -e s/wind:/'Wind: '/g</string>
+echo "$tomorrow_data" | grep -A2 $(echo $ui) | tr '\n' ':' | awk -F: '{print "MAX UV index: "$6,"("$4")  "}' | tr '\n' "$(echo $lf)"
+echo "$tomorrow_data" | grep ''$(echo $cc)$(echo $wi)$(echo $pr)'' | tr '\n' "$(echo $lf)" | sed -e s/cc:/'Cloud Cover: '/g -e s/humidity:/'Humidity: '/g -e s/pressure:/'Pressure: '/g -e s/mbar/'hPa'/g -e s/wind:/'Wind: '/g -e s/precip:/'Precipitation: '/g| sed s/"`printf '\t'`"/'    '/g
+</string>
 	<key>DisplayID</key>
 	<integer>1892209665</integer>
+	<key>DisplayStatusImage</key>
+	<false/>
 	<key>DropShadow</key>
 	<false/>
 	<key>FailureImage</key>
@@ -45,7 +69,7 @@ echo "$cur_data" | grep 'cc:\|humidity:\|wind:' | tr '\n' '\t' | sed -e s/cc:/'C
 	AAAAAQABAAABFQADAAAAAQAEAAABFgADAAAAAQAQAAABFwAEAAAAAQAABAABHAADAAAA
 	AQABAAABKAADAAAAAQACAAABUgADAAAAAQACAAABUwADAAAABAAABNaHcwAHAAACqAAA
 	BN4AAAAAAAgACAAIAAgAAQABAAEAAQAAAqhhcHBsAhAAAG1udHJSR0IgWFlaIAfjAAkA
-	DgAAAAAAAGFjc3BBUFBMAAAAAEFQUEwAAAAAAAAAAAAAAAAAAAAAAAD21gABAAAAANMt
+	EgAAAAAAAGFjc3BBUFBMAAAAAEFQUEwAAAAAAAAAAAAAAAAAAAAAAAD21gABAAAAANMt
 	YXBwbAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 	DGRlc2MAAAEUAAAAdGNwcnQAAAGIAAAAI3d0cHQAAAGsAAAAFHJYWVoAAAHAAAAAFGdY
 	WVoAAAHUAAAAFGJYWVoAAAHoAAAAFHJUUkMAAAH8AAAADnZjZ3QAAAIMAAAAMG5kaW4A
@@ -62,15 +86,17 @@ echo "$cur_data" | grep 'cc:\|humidity:\|wind:' | tr '\n' '\t' | sed -e s/cc:/'C
 	<key>FontFamily</key>
 	<string>HiraginoSans-W3</string>
 	<key>FontSize</key>
-	<real>13</real>
+	<real>11</real>
 	<key>GeekletFrame</key>
-	<string>{{844, 164}, {478.625, 45}}</string>
+	<string>{{674.65625, 467.05859375}, {645, 45}}</string>
 	<key>HasShadow</key>
 	<false/>
 	<key>Identifier</key>
 	<string>org.tynsoe.geeklet.shell</string>
+	<key>Name</key>
+	<string>uv_tomorrow</string>
 	<key>RefreshInterval</key>
-	<integer>300</integer>
+	<integer>3600</integer>
 	<key>SetLocale</key>
 	<true/>
 	<key>SuccessImage</key>
@@ -100,7 +126,7 @@ echo "$cur_data" | grep 'cc:\|humidity:\|wind:' | tr '\n' '\t' | sed -e s/cc:/'C
 	AAAAAQABAAABFQADAAAAAQAEAAABFgADAAAAAQAQAAABFwAEAAAAAQAABAABHAADAAAA
 	AQABAAABKAADAAAAAQACAAABUgADAAAAAQACAAABUwADAAAABAAABNaHcwAHAAACqAAA
 	BN4AAAAAAAgACAAIAAgAAQABAAEAAQAAAqhhcHBsAhAAAG1udHJSR0IgWFlaIAfjAAkA
-	DgAAAAAAAGFjc3BBUFBMAAAAAEFQUEwAAAAAAAAAAAAAAAAAAAAAAAD21gABAAAAANMt
+	EgAAAAAAAGFjc3BBUFBMAAAAAEFQUEwAAAAAAAAAAAAAAAAAAAAAAAD21gABAAAAANMt
 	YXBwbAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 	DGRlc2MAAAEUAAAAdGNwcnQAAAGIAAAAI3d0cHQAAAGsAAAAFHJYWVoAAAHAAAAAFGdY
 	WVoAAAHUAAAAFGJYWVoAAAHoAAAAFHJUUkMAAAH8AAAADnZjZ3QAAAIMAAAAMG5kaW4A
@@ -117,7 +143,7 @@ echo "$cur_data" | grep 'cc:\|humidity:\|wind:' | tr '\n' '\t' | sed -e s/cc:/'C
 	<key>TextColor</key>
 	<data>
 	BAtzdHJlYW10eXBlZIHoA4QBQISEhAdOU0NvbG9yAISECE5TT2JqZWN0AIWEAWMBhARm
-	ZmZmAYNS/n8/g27/fz+DSP4pP4Y=
+	ZmZmAYNS/n8/g27/fz+DepUxP4Y=
 	</data>
 	<key>TextStrikethrough</key>
 	<integer>0</integer>

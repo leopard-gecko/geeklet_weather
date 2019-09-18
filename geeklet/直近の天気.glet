@@ -12,8 +12,7 @@ weather_url="https://www.accuweather.com/en/jp/koto-ku/221230/weather-forecast/2
 weather_data=`curl -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X)' --silent $weather_url`
 
 # MINUTECASTを取得して表示
-echo "$weather_data" | grep 'minuteCastSummary' | cut -d"{" -f2 | cut -d"}" -f1 | tr ',' '\n' | tr -d '"' | grep 'phrase' | awk -F: '{print $2}' | grep -v -e 'No precipitation' -e 'temporarily unavailable'
-</string>
+echo "$weather_data" | grep 'minuteCastSummary' | cut -d"{" -f2 | cut -d"}" -f1 | sed s/',"'/\\$'\n'/g | tr -d '"' | grep 'phrase' | awk -F: '{print $2}' | grep -v -e 'No precipitation' -e 'temporarily unavailable'</string>
 	<key>DisplayID</key>
 	<integer>1892209665</integer>
 	<key>DisplayStatusImage</key>
@@ -115,7 +114,7 @@ echo "$weather_data" | grep 'minuteCastSummary' | cut -d"{" -f2 | cut -d"}" -f1 
 	<key>FontSize</key>
 	<real>24</real>
 	<key>GeekletFrame</key>
-	<string>{{990, 42}, {616, 45}}</string>
+	<string>{{990, 42.33984375}, {616, 45}}</string>
 	<key>HasShadow</key>
 	<false/>
 	<key>Identifier</key>

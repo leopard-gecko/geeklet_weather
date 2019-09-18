@@ -21,13 +21,13 @@ date_b=0
 # 元データ取得（日曜日の場合は翌週の週末を取得する）
 weather_data=`curl -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X)' --silent $weather_url`
 daily_data=`echo "$weather_data" | grep -e 'dailyForecast' | tr '{|}' '\n'`
-sat_data=`echo "$daily_data" | grep -A3 $(date -v+$(expr 6 - $(date +%w))d +%Y-%m-%d) | tr ',' '\n' | tr -d '"'`
-sun_data=`echo "$daily_data" | grep -A3 $(date -v+$(expr 7 - $(date +%w))d +%Y-%m-%d) | tr ',' '\n' | tr -d '"'`
+sat_data=$(echo "$daily_data" | grep -A3 $(date -v+$(expr 6 - $(date +%w))d +%Y-%m-%d) | sed s/',"'/\\$'\n'/g | tr -d '"')
+sun_data=$(echo "$daily_data" | grep -A3 $(date -v+$(expr 7 - $(date +%w))d +%Y-%m-%d) | sed s/',"'/\\$'\n'/g | tr -d '"')
 
 # 土日の最高・最低気温と天気を表示
-sat_hi=`echo "$sat_data" | grep -A1 'day:' | grep 'dTemp' | awk -F: '{print $2}'`
+sat_hi=`echo "$sat_data" | grep -A1 'day:'   | grep 'dTemp' | awk -F: '{print $2}'`
 sat_lo=`echo "$sat_data" | grep -A1 'night:' | grep 'dTemp' | awk -F: '{print $2}'`
-sun_hi=`echo "$sun_data" | grep -A1 'day:' | grep 'dTemp' | awk -F: '{print $2}'`
+sun_hi=`echo "$sun_data" | grep -A1 'day:'   | grep 'dTemp' | awk -F: '{print $2}'`
 sun_lo=`echo "$sun_data" | grep -A1 'night:' | grep 'dTemp' | awk -F: '{print $2}'`
 
 printf "\033[0;${SAT_COLOR}mSaturday\033[0m"
