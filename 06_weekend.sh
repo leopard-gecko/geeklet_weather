@@ -1,6 +1,6 @@
 # 週末の天気のスクリプト
 
-# 場所のURL
+# 場所のURL （日本語表記にしたい場合は/en/を/ja/に書き換える）
 weather_url="https://www.accuweather.com/en/jp/koto-ku/221230/weather-forecast/221230"
 
 # 土曜日と日曜日の色 （30 黒、31 赤、32 緑、33 黄、34 青、35 マゼンタ、36 シアン、37 白、0 デフォルト）
@@ -25,14 +25,14 @@ sat_lo=`echo "$sat_data" | grep -A1 'night:' | grep 'dTemp' | awk -F: '{print $2
 sun_hi=`echo "$sun_data" | grep -A1 'day:'   | grep 'dTemp' | awk -F: '{print $2}'`
 sun_lo=`echo "$sun_data" | grep -A1 'night:' | grep 'dTemp' | awk -F: '{print $2}'`
 
-printf "\033[0;${SAT_COLOR}mSaturday\033[0m"
-[ $date_b -eq 1 ] && printf " ($(echo "$sat_data" | grep -m1 'date' | awk -F: '{print $2}'))"
+printf "\033[0;${SAT_COLOR}m$(echo "$sat_data" | grep -m1 'lDOW:' | awk -F: '{print $2}')\033[0m"
+[ $date_b -eq 1 ] && printf "\t($(echo "$sat_data" | grep -m1 'date:' | awk -F: '{print $2}'))"
 echo
 printf "%s/%s " $sat_hi $sat_lo
 echo "$sat_data" | grep -m1 "$detail" | awk -F: '{print $2}'
 
-printf "\033[0;${SUN_COLOR}mSunday\033[0m"
-[ $date_b -eq 1 ] && printf "   ($(echo "$sun_data" | grep -m1 'date' | awk -F: '{print $2}'))"
+printf "\033[0;${SUN_COLOR}m$(echo "$sun_data" | grep -m1 'lDOW:' | awk -F: '{print $2}')\033[0m"
+[ $date_b -eq 1 ] && printf "\t($(echo "$sun_data" | grep -m1 'date:' | awk -F: '{print $2}'))"
 echo
 printf "%s/%s " $sun_hi $sun_lo
 echo "$sun_data" | grep -m1 "$detail" | awk -F: '{print $2}'

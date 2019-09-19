@@ -5,7 +5,7 @@
 	<key>Command</key>
 	<string># 明日の天気のスクリプト
 
-# 場所のURL
+# 場所のURL （日本語表記にしたい場合は/en/を/ja/に書き換える）
 weather_url="https://www.accuweather.com/en/jp/koto-ku/221230/weather-forecast/221230"
 
 # Tomorrowまたは曜日の色 （30 黒、31 赤、32 緑、33 黄、34 青、35 マゼンタ、36 シアン、37 白、0 デフォルト）
@@ -23,16 +23,17 @@ dow=0
 date_b=0
 
 # 元データ取得
-weather_data=`curl -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X)' --silent ${weather_url/weather-forecast/daily-weather-forecast}`
+weather_data=`curl -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X)' --silent $weather_url`
 tomorrow_data=$(echo "$weather_data" | grep 'dailyForecast' | tr '{|}' '\n' | grep -A3 $(date -v+$(($later))d '+%Y-%m-%d') | sed s/',"'/\\$'\n'/g | tr -d '"')
+locale_data=$(echo "$weather_data" | grep -e 'pageLocale' |  tr '{|}' '\n' | sed s/',"'/\\$'\n'/g | tr -d '"')
 
 # 明日の最高・最低気温と天気を表示
 hi=`echo "$tomorrow_data" | grep -A1 'day:' | grep 'dTemp' | awk -F: '{print $2}'`
 lo=`echo "$tomorrow_data" | grep -A1 'night:' | grep 'dTemp' | awk -F: '{print $2}'`
 
-[ $dow -eq 0 ] &amp;&amp; printf "\033[0;${T_COLOR}mTomorrow\033[0m"
+[ $dow -eq 0 ] &amp;&amp; printf "\033[0;${T_COLOR}m$(echo "$locale_data" | grep -m1 'tomorrow:' | awk -F: '{print $2}')\033[0m"
 [ $dow -eq 1 ] &amp;&amp; printf "\033[0;${T_COLOR}m$(echo "$tomorrow_data" | grep -m1 'lDOW:' | awk -F: '{print $2}')\033[0m"
-[ $date_b -eq 1 ] &amp;&amp; printf " ($(echo "$tomorrow_data" | grep 'date:' | awk -F: '{print $2}'))"
+[ $date_b -eq 1 ] &amp;&amp; printf "\t($(echo "$tomorrow_data" | grep 'date:' | awk -F: '{print $2}'))"
 echo
 printf "%s/%s " $hi $lo
 echo "$tomorrow_data" | grep -m1 "$detail" | awk -F: '{print $2}'
@@ -139,7 +140,7 @@ echo "https://vortex.accuweather.com/adc2010/images/slate/icons/"$icon_data"-l.p
 	<key>FontSize</key>
 	<real>18</real>
 	<key>GeekletFrame</key>
-	<string>{{690, 415}, {877.4921875, 72.00390625}}</string>
+	<string>{{690.33984375, 412.59375}, {878, 73}}</string>
 	<key>HasShadow</key>
 	<false/>
 	<key>Identifier</key>

@@ -1,6 +1,6 @@
 # 明日の紫外線、雲量、風速・風向き、降水確率のスクリプト
 
-# 場所のURL
+# 場所のURL （日本語表記にしたい場合は/de/を/ja/に書き換える）
 weather_url="https://www.accuweather.com/en/jp/koto-ku/221230/weather-forecast/221230"
 
 # 何日後？
@@ -26,7 +26,8 @@ if [ $line_feed -eq 1 ]; then lf='\\n'; else lf='\\t'; fi
 # 元データ取得
 weather_data=$(curl -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X)' --silent ${weather_url/weather-forecast/daily-weather-forecast}?day=$(($later)))
 tomorrow_data=$(echo "$weather_data" | grep 'var today' | tr '{|}' '\n' | sed s/',"'/\\$'\n'/g | tr -d '"' | awk '/date:/,/lDate:/')
+locale_data=$(echo "$weather_data" | grep -e 'pageLocale' |  tr '{|}' '\n' | sed s/',"'/\\$'\n'/g | tr -d '"')
 
 # 現在の雲量、湿度、風速・風向きを取得して表示
-echo "$tomorrow_data" | grep -A2 $(echo $ui) | tr '\n' ':' | awk -F: '{print "MAX UV index: "$6,"("$4")  "}' | tr '\n' "$(echo $lf)"
-echo "$tomorrow_data" | grep ''$(echo $cc)$(echo $wi)$(echo $pr)'' | tr '\n' "$(echo $lf)" | sed -e s/cc:/'Cloud Cover: '/g -e s/humidity:/'Humidity: '/g -e s/pressure:/'Pressure: '/g -e s/mbar/'hPa'/g -e s/wind:/'Wind: '/g -e s/precip:/'Precipitation: '/g| sed s/"`printf '\t'`"/'    '/g
+echo "$tomorrow_data" | grep -A2 $(echo $ui) | tr '\n' ':' | awk -F: -v uvi="$(echo "$locale_data" | grep 'maxUV:' | awk -F: '{print $2}')" '{print uvi": "$6,"("$4")"}' | sed "s/$/    /g" | tr '\n' "$(echo $lf)"
+echo "$tomorrow_data" | grep ''$(echo $cc$wi$pr)'' | sed "s/$/    /g" | tr '\n' "$(echo $lf)" | sed -e s/cc:/"$(echo "$locale_data" | grep 'cloudCover:' | awk -F: '{print $2}'): "/g -e s/wind:/"$(echo "$locale_data" | grep 'wind:' | awk -F: '{print $2}'): "/g -e s/precip:/"$(echo "$locale_data" | grep 'precip:' | awk -F: '{print $2}'): "/g
