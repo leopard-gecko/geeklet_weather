@@ -64,13 +64,13 @@ _IFS="$IFS";IFS="
 for (( i=0; i &lt; ${#current_time[@]}; ++i))
 do
 mystrln "$(echo "${current_time[$i]}")" $my_strln s1 s2
-printf "%-*s" $s2 "$s1" | sed -e s/AM/`printf "\033[0;${AM_COLOR}mAM\033[0m"`/g -e s/PM/`printf "\033[0;${PM_COLOR}mPM\033[0m"`/g | tr -d '\n'
+printf "%-*s" $s2 "$s1" | perl -pe 's/((?&lt;![0-9])([0-9])(?![0-9])|0[0-9]|1[0-1])/\1'`printf "\033[0;${AM_COLOR}m"`'/' | sed -E 's/(1[2-9]|2[0-3])/&amp;'`printf "\033[0;${PM_COLOR}m"`'/' | sed -E 's/$/'`printf "\033[0m"`'/' | sed -e s/AM/`printf "\033[0;${AM_COLOR}mAM\033[0m"`/ -e s/PM/`printf "\033[0;${PM_COLOR}mPM\033[0m"`/ | tr -d '\n'
 done
 echo
 IFS="$_IFS"
 
-# 天気を左揃えの指定した桁数かつ3段で表示
-for (( k=1; k &lt; 4; ++k))
+# 天気を左揃えの指定した桁数かつ4段で表示
+for (( k=1; k &lt; 5; ++k))
 do
 for (( i=0; i &lt; ${#current_weather[@]}; ++i))
 do
@@ -84,7 +84,8 @@ done
 for (( i=0; i &lt; ${#current_icon[@]}; ++i))
 do
 echo "https://vortex.accuweather.com/adc2010/images/slate/icons/${current_icon[$i]}-s.png" | xargs curl --silent -o /tmp/weather_hour_`expr $i + $later`.png
-done</string>
+done
+</string>
 	<key>DisplayID</key>
 	<integer>1892209665</integer>
 	<key>DropShadow</key>
@@ -135,7 +136,7 @@ done</string>
 	<key>FontSize</key>
 	<real>13</real>
 	<key>GeekletFrame</key>
-	<string>{{615, 327}, {774, 62}}</string>
+	<string>{{615, 332.33984375}, {776, 69}}</string>
 	<key>HasShadow</key>
 	<false/>
 	<key>Identifier</key>

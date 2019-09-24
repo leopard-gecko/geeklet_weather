@@ -59,13 +59,13 @@ _IFS="$IFS";IFS="
 for (( i=0; i < ${#current_time[@]}; ++i))
 do
 mystrln "$(echo "${current_time[$i]}")" $my_strln s1 s2
-printf "%-*s" $s2 "$s1" | sed -e s/AM/`printf "\033[0;${AM_COLOR}mAM\033[0m"`/g -e s/PM/`printf "\033[0;${PM_COLOR}mPM\033[0m"`/g | tr -d '\n'
+printf "%-*s" $s2 "$s1" | perl -pe 's/((?<![0-9])([0-9])(?![0-9])|0[0-9]|1[0-1])/\1'`printf "\033[0;${AM_COLOR}m"`'/' | sed -E 's/(1[2-9]|2[0-3])/&'`printf "\033[0;${PM_COLOR}m"`'/' | sed -E 's/$/'`printf "\033[0m"`'/' | sed -e s/AM/`printf "\033[0;${AM_COLOR}mAM\033[0m"`/ -e s/PM/`printf "\033[0;${PM_COLOR}mPM\033[0m"`/ | tr -d '\n'
 done
 echo
 IFS="$_IFS"
 
-# 天気を左揃えの指定した桁数かつ3段で表示
-for (( k=1; k < 4; ++k))
+# 天気を左揃えの指定した桁数かつ4段で表示
+for (( k=1; k < 5; ++k))
 do
 for (( i=0; i < ${#current_weather[@]}; ++i))
 do
