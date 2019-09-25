@@ -14,8 +14,8 @@ later=1
 
 # 曜日を表示する？（1 表示する、0 表示しない）
 dow=0
-# 日付を表示する？（1 表示する、0 表示しない）
-date_b=0
+# 日付を表示する？（1 簡略表示、2 詳細表示、0 表示しない）
+date_b=2
 
 # 元データ取得
 weather_data=`curl -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X)' --silent $weather_url`
@@ -26,9 +26,10 @@ locale_data=$(echo "$weather_data" | grep -e 'pageLocale' |  tr '{|}' '\n' | sed
 hi=`echo "$tomorrow_data" | grep -A1 'day:' | grep 'dTemp' | awk -F: '{print $2}'`
 lo=`echo "$tomorrow_data" | grep -A1 'night:' | grep 'dTemp' | awk -F: '{print $2}'`
 
-[ $dow -eq 0 ] && printf "\033[0;${T_COLOR}m$(echo "$locale_data" | grep -m1 'tomorrow:' | awk -F: '{print $2}')\033[0m"
-[ $dow -eq 1 ] && printf "\033[0;${T_COLOR}m$(echo "$tomorrow_data" | grep -m1 'lDOW:' | awk -F: '{print $2}')\033[0m"
+[ $dow -eq 0 ] && printf "\033[0;${T_COLOR}m$(echo "$locale_data" | grep -m1 'tomorrow:' | awk -F: '{print $2}')\033[0m   "
+[ $dow -eq 1 ] && printf "\033[0;${T_COLOR}m$(echo "$tomorrow_data" | grep -m1 'lDOW:' | awk -F: '{print $2}')\033[0m   "
 [ $date_b -eq 1 ] && printf "\t($(echo "$tomorrow_data" | grep 'date:' | awk -F: '{print $2}'))"
+[ $date_b -eq 2 ] && printf "\t($(echo "$tomorrow_data" | grep 'lDate:' | awk -F: '{print $2}'))"
 echo
 printf "%s/%s " $hi $lo
 echo "$tomorrow_data" | grep -m1 "$detail" | awk -F: '{print $2}'

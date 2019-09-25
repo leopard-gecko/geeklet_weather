@@ -1,6 +1,3 @@
-#!/bin/bash
-LANG=ja_JP.UTF-8
-
 # 時間単位のスクリプト その１
 
 # 場所のURL（日本語表記にしたい場合は/en/を/ja/に書き換える）
@@ -21,15 +18,16 @@ my_strln=14
 
 # 文字数取得用関数
 mystrln() {
+	local LANG=ja_JP.UTF-8
     local dn=0 mb=0
     for ((j = 0; j < $((${#1})); ++j))
     do
-        [ `echo -n ${1:$j:1} | wc -c` -le 1 ] ; fd=$?
+        [ `/bin/echo -n ${1:$j:1} | wc -c` -le 1 ] ; fd=$?
         dn=$(($dn+1+$fd))
         [ $dn -gt $2 ] && break
         mb=$(($mb+$fd))
     done
-    printf -v $3 "%s" "`echo -n ${1:0:$j}`"
+    printf -v $3 "%s" "`/bin/echo -n ${1:0:$j}`"
     printf -v $4 "%d" $(($mb+$2))
 } 
 
