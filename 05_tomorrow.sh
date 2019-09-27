@@ -15,7 +15,7 @@ later=1
 # 曜日を表示する？（1 表示する、0 表示しない）
 dow=0
 # 日付を表示する？（1 簡略表示、2 詳細表示、0 表示しない）
-date_b=2
+date_b=0
 
 # 元データ取得
 weather_data=`curl -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X)' --silent $weather_url`

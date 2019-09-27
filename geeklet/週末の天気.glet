@@ -16,7 +16,7 @@ SUN_COLOR=41
 detail=longPhrase
 
 # 日付を表示する？（1 簡略表示、2 詳細表示、0 表示しない）
-date_b=2
+date_b=1
 
 # 元データ取得（日曜日の場合は翌週の週末を取得する）
 weather_data=`curl -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X)' --silent $weather_url`
