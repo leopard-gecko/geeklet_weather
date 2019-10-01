@@ -33,7 +33,7 @@ mystrln() {
 
 # 元データ取得
 weather_data0=`curl -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X)' --silent ${weather_url/weather-forecast/hourly-weather-forecast}`
-weather_data1=`curl -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X)' --silent ${weather_url/weather-forecast/hourly-weather-forecast}"?day=1"`
+weather_data1=`curl -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X)' --silent ${weather_url/weather-forecast/hourly-weather-forecast}"?day=2"`
 hour_data=$(echo "$weather_data0" "$weather_data1"| grep 'hourlyForecast' | tr '{|}' '\n' | grep 'localTime' | sed -n $(expr 1 + $later),$(expr $hour + $later)p)
 
 # 指定した時間分の時刻を取得（後で配列変数として使う。以下同様）
