@@ -1,0 +1,64 @@
+ja:日本語
+en:English (US)
+es:Español
+fr:Français
+da:Dansk
+pt-pt:Português
+nl:Nederlands
+no:Norsk
+it:Italiano
+de:Deutsch
+sv:Svenska
+fi:Suomi
+zh-hk:中文 (HK)
+zh-cn:中文 (SIM)
+zh-tw:中文 (Taiwan)
+es-ar:Español (Argentina)
+es-mx:Español (Latin America)
+sk:Slovenčinu
+ro:Romana
+cs:Čeština
+hu:Magyar
+pl:Polski
+ca:Català
+pt-br:Português (Brazil)
+hi:हिन्दी
+ru:русский
+ar:عربي
+el:Ελληνικά
+en-gb:English (UK)
+ko:한국어
+tr:TÜRKÇE
+fr-ca:Français (Canada)
+he:עברית
+sl:Slovenski
+uk:Українське
+id:Bahasa Indonesia
+bg:български
+et:Eesti keeles
+hr:Hrvatski
+kk:Қазақша
+lt:Lietuvių
+lv:Latviski
+mk:Македонски
+ms:Bahasa Melayu
+tl:Tagalog
+sr:Srpski
+th:ไทย
+vi:Tiếng Việt
+fa:فارسی
+bn:বাংলা
+bs:bosanski
+is:íslenska
+sw:Kiswahili
+ur:اُردُو
+sr-me:Crnogorski
+uz:Oʻzbekcha
+az:Azərbaycanca
+ta:தமிழ்
+gu:ગુજરાતી
+kn:ಕನ್ನಡ
+te:తెలుగు
+mr:मराठी
+pa:ਪੰਜਾਬੀ
+my:မြန်မာဘာသာ
