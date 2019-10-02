@@ -29,13 +29,13 @@ if [ $WIND -eq 1 ];        then WI='\|wind:';     else WI=''; fi
 if [ $LINE_FEED -eq 1 ]; then LF='\\n'; else LF='\\t'; fi
 
 # 元データ取得
-weather_data=`curl -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X)' --silent ${WEATHER_URL/weather-forecast/current-weather}`
-cur_data=$(echo "$weather_data" | grep 'curCon' | tr '{|}' '\n' | sed s/',"'/\\$'\n'/g | tr -d '"')
-locale_data=$(echo "$weather_data" | grep -e 'pageLocale' |  tr '{|}' '\n' | sed s/',"'/\\$'\n'/g | tr -d '"')
+WEATHER_DATA=`curl -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X)' --silent ${WEATHER_URL/weather-forecast/current-weather}`
+DATA_CUR=$(echo "$WEATHER_DATA" | grep 'curCon' | tr '{|}' '\n' | sed s/',"'/\\$'\n'/g | tr -d '"')
+DATA_LOCALE=$(echo "$WEATHER_DATA" | grep -e 'pageLocale' |  tr '{|}' '\n' | sed s/',"'/\\$'\n'/g | tr -d '"')
 
 # 現在の雲量、湿度、風速・風向きを取得して表示
-echo "$cur_data" | grep -A2 $(echo $UI) | tr '\n' ':' | awk -F: -v uvi="$(echo "$locale_data" | grep 'uv:' | awk -F: '{print $2}')" '{print uvi": "$6,"("$4")"}' | tr '\n' "$(echo $LF)"
-echo "$cur_data" | grep ''$(echo $CC)$(echo $HU)$(echo $PR)$(echo $WI)'' | tr '\n' "$(echo $LF)" | sed -e s/cc:/"$(echo "$locale_data" | grep -m1 'cloudCover:' | awk -F: '{print $2}'): "/g -e s/humidity:/"$(echo "$locale_data" | grep -m1 'humidity:' | awk -F: '{print $2}'): "/g -e s/pressure:/"$(echo "$locale_data" | grep -m1 'pressure:' | awk -F: '{print $2}'): "/g -e s/mbar/'hPa'/g -e s/wind:/"$(echo "$locale_data" | grep -m1 'wind:' | awk -F: '{print $2}'): "/g | sed s/"`printf '\t'`"/'    '/g</string>
+echo "$DATA_CUR" | grep -A2 $(echo $UI) | tr '\n' ':' | awk -F: -v uvi="$(echo "$DATA_LOCALE" | grep 'uv:' | awk -F: '{print $2}')" '{print uvi": "$6,"("$4")"}' | tr '\n' "$(echo $LF)"
+echo "$DATA_CUR" | grep ''$(echo $CC)$(echo $HU)$(echo $PR)$(echo $WI)'' | tr '\n' "$(echo $LF)" | sed -e s/cc:/"$(echo "$DATA_LOCALE" | grep -m1 'cloudCover:' | awk -F: '{print $2}'): "/g -e s/humidity:/"$(echo "$DATA_LOCALE" | grep -m1 'humidity:' | awk -F: '{print $2}'): "/g -e s/pressure:/"$(echo "$DATA_LOCALE" | grep -m1 'pressure:' | awk -F: '{print $2}'): "/g -e s/mbar/'hPa'/g -e s/wind:/"$(echo "$DATA_LOCALE" | grep -m1 'wind:' | awk -F: '{print $2}'): "/g | sed s/"`printf '\t'`"/'    '/g</string>
 	<key>DisplayID</key>
 	<integer>1892209665</integer>
 	<key>DropShadow</key>

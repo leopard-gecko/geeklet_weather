@@ -49,7 +49,7 @@ echo "https://vortex.accuweather.com/adc2010/images/slate/icons/"$ICON_SUN"-l.pn
 
 # 画像GeekletをRefleshする
 osascript <<EOT
-    tell application "GeekTool Helper"
-		tell image geeklets to refresh
-	end tell
+  tell application "GeekTool Helper"
+    tell image geeklets to refresh
+  end tell
 EOT

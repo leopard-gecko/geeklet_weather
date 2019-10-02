@@ -13,5 +13,5 @@ DATA_MC=$(echo "$WEATHER_DATA" | grep 'minuteCastSummary' | tr '{|}' '\n' | sed 
 
 # MINUTECASTを取得して表示
 if [ $(echo "$DATA_MC" | grep 'typeId' | awk -F: '{print $2}') -ne 0 ] || [ $MC_SHOW -eq 1 ];then
-echo "$DATA_MC" | grep 'phrase' | awk -F: '{print $2}'
+  echo "$DATA_MC" | grep 'phrase' | awk -F: '{print $2}'
 fi
