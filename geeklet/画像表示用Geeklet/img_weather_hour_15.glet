@@ -3,20 +3,18 @@
 <plist version="1.0">
 <dict>
 	<key>DisplayID</key>
-	<integer>1892209153</integer>
+	<integer>1892209665</integer>
 	<key>GeekletFrame</key>
-	<string>{{613, 410}, {72, 72}}</string>
+	<string>{{1258, 295}, {30, 30}}</string>
 	<key>HasShadow</key>
 	<false/>
 	<key>Identifier</key>
 	<string>org.tynsoe.geeklet.image</string>
 	<key>ImageURL</key>
-	<string>file://localhost/private/tmp/weather_tomorrow.png</string>
+	<string>file://localhost/private/tmp/weather_hour_15.png</string>
 	<key>Name</key>
-	<string>img_weather_tomorrow</string>
-	<key>Opacity</key>
-	<real>1</real>
+	<string>img_weather_hour_15</string>
 	<key>RefreshInterval</key>
-	<integer>3600</integer>
+	<integer>0</integer>
 </dict>
 </plist>

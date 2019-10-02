@@ -5,16 +5,16 @@
 	<key>DisplayID</key>
 	<integer>1892209665</integer>
 	<key>GeekletFrame</key>
-	<string>{{1167, 295}, {30, 30}}</string>
+	<string>{{985, 191}, {30, 30}}</string>
 	<key>HasShadow</key>
 	<false/>
 	<key>Identifier</key>
 	<string>org.tynsoe.geeklet.image</string>
 	<key>ImageURL</key>
-	<string>file://localhost/private/tmp/weather_hour_14.png</string>
+	<string>file://localhost/private/tmp/weather_hour_4.png</string>
 	<key>Name</key>
-	<string>img_weather_hour_14</string>
+	<string>img_weather_hour_4</string>
 	<key>RefreshInterval</key>
-	<integer>600</integer>
+	<integer>0</integer>
 </dict>
 </plist>

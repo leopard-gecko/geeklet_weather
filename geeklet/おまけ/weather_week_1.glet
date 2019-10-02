@@ -11,10 +11,10 @@
 	<key>Identifier</key>
 	<string>org.tynsoe.geeklet.image</string>
 	<key>ImageURL</key>
-	<string>file:///tmp/weather_week_0.png</string>
+	<string>file:///tmp/weather_week_1.png</string>
 	<key>Name</key>
-	<string>weather_week_1.png</string>
+	<string>weather_week_1</string>
 	<key>RefreshInterval</key>
-	<integer>3600</integer>
+	<integer>0</integer>
 </dict>
 </plist>

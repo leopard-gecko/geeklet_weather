@@ -13,8 +13,8 @@
 	<key>ImageURL</key>
 	<string>file:///tmp/weather_week_2.png</string>
 	<key>Name</key>
-	<string>weather_week_2.png</string>
+	<string>weather_week_2</string>
 	<key>RefreshInterval</key>
-	<integer>3600</integer>
+	<integer>0</integer>
 </dict>
 </plist>

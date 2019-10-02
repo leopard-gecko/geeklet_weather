@@ -3,9 +3,9 @@
 <plist version="1.0">
 <dict>
 	<key>DisplayID</key>
-	<integer>1892209153</integer>
+	<integer>1892209665</integer>
 	<key>GeekletFrame</key>
-	<string>{{562.8125, 37.8828125}, {261, 157}}</string>
+	<string>{{562, 38.33984375}, {261, 157}}</string>
 	<key>HasShadow</key>
 	<false/>
 	<key>Identifier</key>
@@ -17,6 +17,6 @@
 	<key>Opacity</key>
 	<real>0.85428406762295084</real>
 	<key>RefreshInterval</key>
-	<integer>300</integer>
+	<integer>0</integer>
 </dict>
 </plist>
