@@ -7,7 +7,7 @@
 [ -f "$HOME/.bashrc" ] &amp;&amp; source "$HOME/.bashrc"
 
 # 場所のURL（日本語表記にしたい場合は/en/を/ja/に書き換える）
-WEATHER_URL="${WEATHER_URL:='https://www.accuweather.com/en/jp/koto-ku/221230/weather-forecast/221230'}"
+WEATHER_URL=${WEATHER_URL:='https://www.accuweather.com/en/jp/koto-ku/221230/weather-forecast/221230'}
 
 # 元データ取得
 WEATHER_DATA=`curl -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X)' --silent $WEATHER_URL`
@@ -27,9 +27,9 @@ echo "https://vortex.accuweather.com/adc2010/images/icons-numbered/"$ICON_CUR"-x
 
 # 画像GeekletをRefleshする
 osascript &lt;&lt;EOT
-    tell application "GeekTool Helper"
-		tell image geeklets to refresh
-	end tell
+  tell application "GeekTool Helper"
+    tell image geeklets to refresh
+  end tell
 EOT
 </string>
 	<key>DisplayID</key>
@@ -132,7 +132,7 @@ EOT
 	<key>FontSize</key>
 	<real>76</real>
 	<key>GeekletFrame</key>
-	<string>{{840, 69.62109375}, {947, 110}}</string>
+	<string>{{840, 70}, {947, 110}}</string>
 	<key>HasShadow</key>
 	<false/>
 	<key>Identifier</key>

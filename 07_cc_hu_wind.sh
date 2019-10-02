@@ -2,7 +2,7 @@
 [ -f "$HOME/.bashrc" ] && source "$HOME/.bashrc"
 
 # 場所のURL（日本語表記にしたい場合は/en/を/ja/に書き換える）
-WEATHER_URL="${WEATHER_URL:='https://www.accuweather.com/en/jp/koto-ku/221230/weather-forecast/221230'}"
+WEATHER_URL=${WEATHER_URL:='https://www.accuweather.com/en/jp/koto-ku/221230/weather-forecast/221230'}
 
 # 取得したいデータ（0 取得しない、1 取得する）
 UV_INDEX=1      #紫外線

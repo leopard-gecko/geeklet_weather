@@ -7,7 +7,7 @@
 [ -f "$HOME/.bashrc" ] &amp;&amp; source "$HOME/.bashrc"
 
 # 場所のURL （日本語表記にしたい場合は/en/を/ja/に書き換える）
-WEATHER_URL="${WEATHER_URL:='https://www.accuweather.com/en/jp/koto-ku/221230/weather-forecast/221230'}"
+WEATHER_URL=${WEATHER_URL:='https://www.accuweather.com/en/jp/koto-ku/221230/weather-forecast/221230'}
 
 # Tomorrowまたは曜日の色 （30 黒、31 赤、32 緑、33 黄、34 青、35 マゼンタ、36 シアン、37 白、0 デフォルト）
 T_COLOR="40"
@@ -47,9 +47,9 @@ echo "https://vortex.accuweather.com/adc2010/images/slate/icons/"$ICON_TOMORROW"
 
 # 画像GeekletをRefleshする
 osascript &lt;&lt;EOT
-    tell application "GeekTool Helper"
-		tell image geeklets to refresh
-	end tell
+  tell application "GeekTool Helper"
+    tell image geeklets to refresh
+  end tell
 EOT
 </string>
 	<key>DisplayID</key>

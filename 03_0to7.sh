@@ -2,7 +2,7 @@
 [ -f "$HOME/.bashrc" ] && source "$HOME/.bashrc"
 
 # 場所のURL（日本語表記にしたい場合は/en/を/ja/に書き換える）
-WEATHER_URL="${WEATHER_URL:='https://www.accuweather.com/en/jp/koto-ku/221230/weather-forecast/221230'}"
+WEATHER_URL=${WEATHER_URL:='https://www.accuweather.com/en/jp/koto-ku/221230/weather-forecast/221230'}
 
 # AMとPMの色  30 黒、31 赤、32 緑、33 黄、34 青、35 マゼンタ、36 シアン、37 白、0 デフォルト
 AM_COLOR=31
