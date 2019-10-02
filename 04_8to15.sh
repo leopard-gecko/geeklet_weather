@@ -40,44 +40,48 @@ DATA_HOUR=$(echo "$WEATHER_DATA0" "$WEATHER_DATA1"| grep 'hourlyForecast' | tr '
 # 指定した時間分の時刻を取得（後で配列変数として使う。以下同様）
 _IFS="$IFS";IFS="
 "
-current_time=(`echo "$DATA_HOUR" | awk -F'"localTime":' '{print $2}' | cut -d"\"" -f2 | cut -d"\"" -f1`) 
+CURRENT_TIME=(`echo "$DATA_HOUR" | awk -F'"localTime":' '{print $2}' | cut -d"\"" -f2 | cut -d"\"" -f1`) 
 IFS="$_IFS"
 
 # 指定した時間分の天気を取得
 _IFS="$IFS";IFS="
 "
-current_weather=(`echo "$DATA_HOUR" | awk -F'"phrase":' '{print $2}' | cut -d"\"" -f2 | cut -d"\"" -f1`) 
+CURRENT_WEATHER=(`echo "$DATA_HOUR" | awk -F'"phrase":' '{print $2}' | cut -d"\"" -f2 | cut -d"\"" -f1`) 
 IFS="$_IFS"
 
 # 指定した時間分の天気アイコンのナンバーを取得してゼロパディング
-current_icon=(`echo "$DATA_HOUR" | awk -F'"icon":' '{print $2}' | cut -d"," -f1 | awk '{printf "%02d\n", $1}'`)
+CURRENT_ICON=(`echo "$DATA_HOUR" | awk -F'"icon":' '{print $2}' | cut -d"," -f1 | awk '{printf "%02d\n", $1}'`)
 
 # 時刻を左揃えの指定した桁数で表示
 _IFS="$IFS";IFS="
 "
-for (( i=0; i < ${#current_time[@]}; ++i))
+for (( i=0; i < ${#CURRENT_TIME[@]}; ++i))
 do
-  mystrln "$(echo "${current_time[$i]}")" $MY_STRLN S1 S2
-  printf "%-*s" $S2 "$S1" | perl -pe 's/((?<![0-9])([0-9])(?![0-9])|0[0-9]|1[0-1])/\1'`printf "\033[0;${AM_COLOR}m"`'/' | sed -E 's/(1[2-9]|2[0-3])/&'`printf "\033[0;${PM_COLOR}m"`'/' | sed -E 's/$/'`printf "\033[0m"`'/' | sed -e s/AM/`printf "\033[0;${AM_COLOR}mAM\033[0m"`/ -e s/PM/`printf "\033[0;${PM_COLOR}mPM\033[0m"`/ | tr -d '\n'
+  mystrln "$(echo "${CURRENT_TIME[$i]}")" $MY_STRLN S1 S2
+  if [ "$(echo $WEATHER_URL | grep '/hi/\|/ar/\|/el/\|/ko/\|/ms/\|/bn/\|/ur/\|/kn/\|/te/\|/mr/\|/pa/\|/zh\|/en/')" ]; then
+    printf "%-*s" $S2 "$S1" | sed -E 's/AM|पूर्वाह्न|π.μ.|오전|PG|পূর্বাহ্|ಪೂರ್ವಾಹ್ನ|म.पू.|ਪੂ.ਦੁ.|上午|ص|قبل دوپہر/'$(printf "\033[0;${AM_COLOR}m")'&'$(printf "\033[0m")'/' | sed -E 's/PM|अपराह्|μ.μ.|오후|PTG|অপরাহ্ণ|ಅಪರಾಹ್ನ|PM|म.उ.|ਬਾ.ਦੁ.|下午|م|بعد دوپہر/'$(printf "\033[0;${PM_COLOR}m")'&'$(printf "\033[0m")'/' | tr -d '\n'
+  else
+    printf "%-*s" $S2 "$S1" | perl -pe 's/((?<![0-9])([0-9])(?![0-9])|0[0-9]|1[0-1])/\1'$(printf "\033[0;${AM_COLOR}m")'/' | sed -E 's/(1[2-9]|2[0-3])/&'$(printf "\033[0;${PM_COLOR}m")'/' | sed -E 's/$/'$(printf "\033[0m")'/' | tr -d '\n'
+  fi
 done
 echo
 IFS="$_IFS"
 
 # 天気を左揃えの指定した桁数かつ4段で表示
 for (( k=1; k < 5; ++k))
+do
+  for (( i=0; i < ${#CURRENT_WEATHER[@]}; ++i))
   do
-    for (( i=0; i < ${#current_weather[@]}; ++i))
-    do
-      mystrln "$(echo "${current_weather[$i]}" | awk -v "knum=$k" '{printf "%s", $knum}')" $MY_STRLN S1 S2
-      printf "%-*s" $S2 "$S1"
-    done
+    mystrln "$(echo "${CURRENT_WEATHER[$i]}" | awk -v "knum=$k" '{printf "%s", $knum}')" $MY_STRLN S1 S2
+    printf "%-*s" $S2 "$S1"
+  done
   echo
 done
 
 # 天気アイコンを取得して保存
-for (( i=0; i < ${#current_icon[@]}; ++i))
+for (( i=0; i < ${#CURRENT_ICON[@]}; ++i))
 do
-  echo "https://vortex.accuweather.com/adc2010/images/slate/icons/${current_icon[$i]}-s.png" | xargs curl --silent -o /tmp/weather_hour_`expr $i + $LATER`.png
+  echo "https://vortex.accuweather.com/adc2010/images/slate/icons/${CURRENT_ICON[$i]}-s.png" | xargs curl --silent -o /tmp/weather_hour_`expr $i + $LATER`.png
 done
 
 # 画像GeekletをRefleshする
