@@ -23,7 +23,7 @@ mystrln() {
   local dn=0 mb=0
   for ((j = 0; j < $((${#1})); ++j))
   do
-    [ `/bin/echo -n ${1:$j:1} | wc -c` -le 1 ] ; fd=$?
+    [ $(/bin/echo -n ${1:$j:1} | wc -c) -le 1 ] ; fd=$?
     dn=$(($dn+1+$fd))
     [ $dn -gt $2 ] && break
     mb=$(($mb+$fd))
@@ -33,24 +33,25 @@ mystrln() {
 } 
 
 # 元データ取得
-WEATHER_DATA0=`curl -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X)' --silent ${WEATHER_URL/weather-forecast/hourly-weather-forecast}`
-WEATHER_DATA1=`curl -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X)' --silent ${WEATHER_URL/weather-forecast/hourly-weather-forecast}"?day=2"`
+USER_AGENT='User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X)'
+WEATHER_DATA0=$(curl -H "$USER_AGENT" --silent ${WEATHER_URL/weather-forecast/hourly-weather-forecast})
+WEATHER_DATA1=$(curl -H "$USER_AGENT" --silent ${WEATHER_URL/weather-forecast/hourly-weather-forecast}"?day=2")
 DATA_HOUR=$(echo "$WEATHER_DATA0" "$WEATHER_DATA1"| grep 'hourlyForecast' | tr '{|}' '\n' | grep 'localTime' | sed -n $(expr 1 + $LATER),$(expr $HOUR + $LATER)p)
 
 # 指定した時間分の時刻を取得（後で配列変数として使う。以下同様）
 _IFS="$IFS";IFS="
 "
-CURRENT_TIME=(`echo "$DATA_HOUR" | awk -F'"localTime":' '{print $2}' | cut -d"\"" -f2 | cut -d"\"" -f1`) 
+CURRENT_TIME=($(echo "$DATA_HOUR" | awk -F'"localTime":' '{print $2}' | cut -d"\"" -f2 | cut -d"\"" -f1)) 
 IFS="$_IFS"
 
 # 指定した時間分の天気を取得
 _IFS="$IFS";IFS="
 "
-CURRENT_WEATHER=(`echo "$DATA_HOUR" | awk -F'"phrase":' '{print $2}' | cut -d"\"" -f2 | cut -d"\"" -f1`) 
+CURRENT_WEATHER=($(echo "$DATA_HOUR" | awk -F'"phrase":' '{print $2}' | cut -d"\"" -f2 | cut -d"\"" -f1)) 
 IFS="$_IFS"
 
 # 指定した時間分の天気アイコンのナンバーを取得してゼロパディング
-CURRENT_ICON=(`echo "$DATA_HOUR" | awk -F'"icon":' '{print $2}' | cut -d"," -f1 | awk '{printf "%02d\n", $1}'`)
+CURRENT_ICON=($(echo "$DATA_HOUR" | awk -F'"icon":' '{print $2}' | cut -d"," -f1 | awk '{printf "%02d\n", $1}'))
 
 # 時刻を左揃えの指定した桁数で表示
 _IFS="$IFS";IFS="
@@ -81,7 +82,7 @@ done
 # 天気アイコンを取得して保存
 for (( i=0; i < ${#CURRENT_ICON[@]}; ++i))
 do
-  echo "https://vortex.accuweather.com/adc2010/images/slate/icons/${CURRENT_ICON[$i]}-s.png" | xargs curl --silent -o /tmp/weather_hour_`expr $i + $LATER`.png
+  echo "https://vortex.accuweather.com/adc2010/images/slate/icons/${CURRENT_ICON[$i]}-s.png" | xargs curl --silent -o /tmp/weather_hour_$(expr $i + $LATER).png
 done
 
 # 画像GeekletをRefleshする

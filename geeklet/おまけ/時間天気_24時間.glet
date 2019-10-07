@@ -10,7 +10,7 @@
 WEATHER_URL=${WEATHER_URL:='https://www.accuweather.com/en/jp/koto-ku/221230/weather-forecast/221230'}
 
 # 何時間分？
-NUM_L=24
+NUM_L=25
 # 何時間後から？
 AFTER=0
 # 何時間おき？
@@ -26,27 +26,32 @@ ICON_B=0
 # 日付を表示する？（1 表示する、0 表示しない）
 DATE_B=0
 
+# データ整理用関数
+pickup_data() { echo "$1" | grep -m1 $2 | tr '{|}' '\n' | perl -pe 's/,"/\n/g' | tr -d '"'; }
+pickup_word() { echo "$1" | grep -m1 $2 | awk -F: '{print $2}'; }
+pickup_hour_word() { echo "$1" | awk -F"\"$2\":" '{print $2}' | cut -d"\"" -f2 | cut -d"\"" -f1;}
+
 # 元データ取得
 USER_AGENT='User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X)'
 WEATHER_DATA0=$(curl -H "$USER_AGENT" --silent ${WEATHER_URL/weather-forecast/hourly-weather-forecast})
 WEATHER_DATA1=$(curl -H "$USER_AGENT" --silent ${WEATHER_URL/weather-forecast/hourly-weather-forecast}"?day=2")
-DATA_HOUR=$(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep 'hourlyForecast' | tr '{|}' '\n' | grep 'localTime' | sed -n $(expr 1 + $AFTER),$(expr $NUM_L + $AFTER + 1)p)
-DATA_LOCALE=$(echo "$WEATHER_DATA0" | grep -e 'pageLocale' |  tr '{|}' '\n' | perl -pe 's/,"/\n/g' | tr -d '"')
-LOCAL_PRECIP=$(echo "$DATA_LOCALE" | grep -m1 'precip:' | awk -F: '{print $2}')
+DATA_HOUR=$(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep 'hourlyForecast' | tr '{|}' '\n' | grep 'localTime' | sed -n $(expr 1 + $AFTER),$(expr $NUM_L + $AFTER)p)
+DATA_LOCALE=$(pickup_data "$WEATHER_DATA0" 'pageLocale')
+LOCAL_PRECIP=$(pickup_word "$DATA_LOCALE" 'precip:')
 
 # 指定された時間分の時刻を取得（後で配列変数として使う。以下同様）
 _IFS="$IFS";IFS="
 "
-CURRENT_TIME=($(echo "$DATA_HOUR" | awk -F'"localTime":' '{print $2}' | cut -d"\"" -f2 | cut -d"\"" -f1))
-CURRENT_DATE=($(echo "$DATA_HOUR" | awk -F'"localDate":' '{print $2}' | cut -d"\"" -f2 | cut -d"\"" -f1))
+CURRENT_TIME=($(pickup_hour_word "$DATA_HOUR" 'localTime'))
+CURRENT_DATE=($(pickup_hour_word "$DATA_HOUR" 'localDate'))
 IFS="$_IFS"
 
 # 指定された時間分のデータを取得
 _IFS="$IFS";IFS="
 "
-CURRENT_TEMP=($(echo "$DATA_HOUR" | awk -F'"temp":' '{print $2}' | cut -d"\"" -f2 | cut -d"\"" -f1))
-CURRENT_PRECIP=($(echo "$DATA_HOUR" | awk -F'"precip":' '{print $2}' | cut -d"\"" -f2 | cut -d"\"" -f1))
-CURRENT_WEATHER=($(echo "$DATA_HOUR" | awk -F'"phrase":' '{print $2}' | cut -d"\"" -f2 | cut -d"\"" -f1))
+CURRENT_TEMP=($(pickup_hour_word "$DATA_HOUR" 'temp'))
+CURRENT_PRECIP=($(pickup_hour_word "$DATA_HOUR" 'precip'))
+CURRENT_WEATHER=($(pickup_hour_word "$DATA_HOUR" 'phrase'))
 IFS="$_IFS"
 
 # 時刻と天気を表示
@@ -60,7 +65,7 @@ do
   else
       printf "%7s\t" "${CURRENT_TIME[$i]}" | perl -pe 's/((?&lt;![0-9])([0-9])(?![0-9])|0[0-9]|1[0-1])/\1'$(printf "\033[0;${AM_COLOR}m")'/' | sed -E 's/(1[2-9]|2[0-3])/&amp;'$(printf "\033[0;${PM_COLOR}m")'/' | sed -E 's/$/'$(printf "\033[0m")'/' | tr -d '\n'
   fi
-  echo " ${CURRENT_TEMP[$i]}\t${LOCAL_PRECIP}:$(printf "%4s" "${CURRENT_PRECIP[$i]}")\t${CURRENT_WEATHER[$i]}"
+  echo " ${CURRENT_TEMP[$i]}\t${LOCAL_PRECIP}:$(printf "%4s" "${CURRENT_PRECIP[$i]}")\t ${CURRENT_WEATHER[$i]}"
 
   # 天気アイコンを取得して保存
   if [ $ICON_B -eq 1 ]; then
@@ -79,6 +84,8 @@ EOT
 </string>
 	<key>DisplayID</key>
 	<integer>1892209665</integer>
+	<key>DisplayStatusImage</key>
+	<false/>
 	<key>DropShadow</key>
 	<false/>
 	<key>FailureImage</key>
@@ -138,6 +145,8 @@ EOT
 	<integer>600</integer>
 	<key>SetLocale</key>
 	<true/>
+	<key>StatusImagePosition</key>
+	<integer>9</integer>
 	<key>SuccessImage</key>
 	<data>
 	TU0AKgAABAj///8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAANAAAAGgAAACAAAAAaAAAA

@@ -12,14 +12,20 @@ WEATHER_URL=${WEATHER_URL:='https://www.accuweather.com/en/jp/koto-ku/221230/wea
 # 120分間天気に変化がない時のMINUTECASTの表示（0 変化がなければ表示しない、1 常に表示する）
 MC_SHOW=0
 
+# データ整理用関数
+pickup_data() { echo "$1" | grep -m1 $2 | tr '{|}' '\n' | perl -pe 's/,"/\n/g' | tr -d '"'; }
+pickup_word() { echo "$1" | grep -m1 $2 | awk -F: '{print $2}'; }
+
 # 元データ取得
-WEATHER_DATA=`curl -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X)' --silent $WEATHER_URL`
-DATA_MC=$(echo "$WEATHER_DATA" | grep 'minuteCastSummary' | tr '{|}' '\n' | sed s/',"'/\\$'\n'/g | tr -d '"')
+USER_AGENT='User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X)'
+WEATHER_DATA=$(curl -H "$USER_AGENT" --silent $WEATHER_URL)
+DATA_MC=$(pickup_data "$WEATHER_DATA" 'minuteCastSummary')
 
 # MINUTECASTを取得して表示
-if [ $(echo "$DATA_MC" | grep 'typeId' | awk -F: '{print $2}') -ne 0 ] || [ $MC_SHOW -eq 1 ];then
-echo "$DATA_MC" | grep 'phrase' | awk -F: '{print $2}'
-fi</string>
+if [ $(pickup_word "$DATA_MC" 'typeId') -ne 0 ] || [ $MC_SHOW -eq 1 ];then
+pickup_word "$DATA_MC" 'phrase'
+fi
+</string>
 	<key>DisplayID</key>
 	<integer>1892209665</integer>
 	<key>DisplayStatusImage</key>
@@ -121,7 +127,7 @@ fi</string>
 	<key>FontSize</key>
 	<real>24</real>
 	<key>GeekletFrame</key>
-	<string>{{990, 41.65625}, {616, 45}}</string>
+	<string>{{1359.48046875, 524.45703125}, {616, 45}}</string>
 	<key>HasShadow</key>
 	<false/>
 	<key>Identifier</key>

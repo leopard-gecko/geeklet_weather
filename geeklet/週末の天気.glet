@@ -19,35 +19,39 @@ DETAIL=longPhrase
 # 日付を表示する？（1 簡略表示、2 詳細表示、0 表示しない）
 DATE_B=1
 
+# データ整理用関数
+pickup_day_data() { echo "$1" | grep -m1 $2 | tr '{|}' '\n' | grep -A3 $3 | perl -pe 's/,"/\n/g' | tr -d '"'; }
+pickup_word() { echo "$1" | grep -m1 $2 | awk -F: '{print $2}'; }
+
 # 元データ取得（日曜日の場合は翌週の週末を取得する）
-WEATHER_DATA=`curl -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X)' --silent $WEATHER_URL`
-DATA_DAILY=`echo "$WEATHER_DATA" | grep -e 'dailyForecast' | tr '{|}' '\n'`
-DATA_SAT=$(echo "$DATA_DAILY" | grep -A3 $(date -v+$(expr 6 - $(date +%w))d +%Y-%m-%d) | sed s/',"'/\\$'\n'/g | tr -d '"')
-DATA_SUN=$(echo "$DATA_DAILY" | grep -A3 $(date -v+$(expr 7 - $(date +%w))d +%Y-%m-%d) | sed s/',"'/\\$'\n'/g | tr -d '"')
+USER_AGENT='User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X)'
+WEATHER_DATA=$(curl -H "$USER_AGENT" --silent $WEATHER_URL)
+DATA_SAT=$(pickup_day_data "$WEATHER_DATA" 'dailyForecast' $(date -v+$(expr 6 - $(date +%w))d +%Y-%m-%d))
+DATA_SUN=$(pickup_day_data "$WEATHER_DATA" 'dailyForecast' $(date -v+$(expr 7 - $(date +%w))d +%Y-%m-%d))
 
 # 土日の最高・最低気温と天気を表示
-SAT_HI=`echo "$DATA_SAT" | grep -A1 'day:'   | grep 'dTemp' | awk -F: '{print $2}'`
-SAT_LO=`echo "$DATA_SAT" | grep -A1 'night:' | grep 'dTemp' | awk -F: '{print $2}'`
-SUN_HI=`echo "$DATA_SUN" | grep -A1 'day:'   | grep 'dTemp' | awk -F: '{print $2}'`
-SUN_LO=`echo "$DATA_SUN" | grep -A1 'night:' | grep 'dTemp' | awk -F: '{print $2}'`
+SAT_HI=$(pickup_word "$(echo "$DATA_SAT" | grep -A1 'day:')"   'dTemp')
+SAT_LO=$(pickup_word "$(echo "$DATA_SAT" | grep -A1 'night:')" 'dTemp')
+SUN_HI=$(pickup_word "$(echo "$DATA_SUN" | grep -A1 'day:')"   'dTemp')
+SUN_LO=$(pickup_word "$(echo "$DATA_SUN" | grep -A1 'night:')" 'dTemp')
 
-printf "\033[0;${SAT_COLOR}m$(echo "$DATA_SAT" | grep -m1 'lDOW:' | awk -F: '{print $2}')\033[0m   "
-[ $DATE_B -eq 1 ] &amp;&amp; printf "\t($(echo "$DATA_SAT" | grep -m1 'date:' | awk -F: '{print $2}'))"
-[ $DATE_B -eq 2 ] &amp;&amp; printf "\t($(echo "$DATA_SAT" | grep -m1 'lDate:' | awk -F: '{print $2}'))"
+printf "\033[0;${SAT_COLOR}m$(pickup_word "$DATA_SAT" 'lDOW:')\033[0m   "
+[ $DATE_B -eq 1 ] &amp;&amp; printf "\t($(pickup_word "$DATA_SAT" 'date:'))"
+[ $DATE_B -eq 2 ] &amp;&amp; printf "\t($(pickup_word "$DATA_SAT" 'lDate:'))"
 echo
 printf "%s/%s " $SAT_HI $SAT_LO
-echo "$DATA_SAT" | grep -m1 "$DETAIL" | awk -F: '{print $2}'
+pickup_word "$DATA_SAT" "$DETAIL"
 
-printf "\033[0;${SUN_COLOR}m$(echo "$DATA_SUN" | grep -m1 'lDOW:' | awk -F: '{print $2}')\033[0m   "
-[ $DATE_B -eq 1 ] &amp;&amp; printf "\t($(echo "$DATA_SUN" | grep -m1 'date:' | awk -F: '{print $2}'))"
-[ $DATE_B -eq 2 ] &amp;&amp; printf "\t($(echo "$DATA_SUN" | grep -m1 'lDate:' | awk -F: '{print $2}'))"
+printf "\033[0;${SUN_COLOR}m$(pickup_word "$DATA_SUN" 'lDOW:')\033[0m   "
+[ $DATE_B -eq 1 ] &amp;&amp; printf "\t($(pickup_word "$DATA_SUN" 'date:'))"
+[ $DATE_B -eq 2 ] &amp;&amp; printf "\t($(pickup_word "$DATA_SUN" 'lDate:'))"
 echo
 printf "%s/%s " $SUN_HI $SUN_LO
-echo "$DATA_SUN" | grep -m1 "$DETAIL" | awk -F: '{print $2}'
+pickup_word "$DATA_SUN" "$DETAIL"
 
 # 週末の天気アイコン取得して画像を保存（取得するアイコンのナンバーはゼロパディングする）
-ICON_SAT=`echo "$DATA_SAT" | grep -m1 'icon' | awk -F: '{printf "%02d",$2}'`
-ICON_SUN=`echo "$DATA_SUN" | grep -m1 'icon' | awk -F: '{printf "%02d",$2}'`
+ICON_SAT=$(printf "%02d" $(pickup_word "$DATA_SAT" 'icon'))
+ICON_SUN=$(printf "%02d" $(pickup_word "$DATA_SUN" 'icon'))
 
 echo "https://vortex.accuweather.com/adc2010/images/slate/icons/"$ICON_SAT"-l.png" | xargs curl --silent -o /tmp/weather_sat.png
 echo "https://vortex.accuweather.com/adc2010/images/slate/icons/"$ICON_SUN"-l.png" | xargs curl --silent -o /tmp/weather_sun.png
@@ -159,7 +163,7 @@ EOT
 	<key>FontSize</key>
 	<real>18</real>
 	<key>GeekletFrame</key>
-	<string>{{689.65625, 486.65625}, {879, 122}}</string>
+	<string>{{820, 751.73828125}, {1012, 111}}</string>
 	<key>HasShadow</key>
 	<false/>
 	<key>Identifier</key>

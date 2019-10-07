@@ -21,28 +21,41 @@ DETAIL=phrase
 SAT_COLOR=34
 SUN_COLOR=31
 
+# データ整理用関数
+pickup_day_data() { echo "$1" | grep -m1 $2 | tr '{|}' '\n' | grep -A3 $3 | perl -pe 's/,"/\n/g' | tr -d '"'; }
+pickup_word() { echo "$1" | grep -m1 $2 | awk -F: '{print $2}'; }
+pickup_d_n_word() { echo "$1" | grep -A1 $2 | grep -m1 $3 | awk -F: '{print $2}'; }
+
 # 元データ取得
-WEATHER_DATA=`curl -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X)' --silent $WEATHER_URL`
+USER_AGENT='User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X)'
+WEATHER_DATA=$(curl -H "$USER_AGENT" --silent $WEATHER_URL)
 for (( i = 0; i < $DAYS; ++i ))
 do
-DATA_WEEK[$i]=$(echo "$WEATHER_DATA" | grep 'dailyForecast' | tr '{|}' '\n' | grep -A3 $(date -v+$(($LATER+$i))d '+%Y-%m-%d') | sed s/',"'/\\$'\n'/g | tr -d '"')
+DATA_WEEK[$i]=$(pickup_day_data "$WEATHER_DATA" 'dailyForecast' $(date -v+$(($LATER+$i))d '+%Y-%m-%d'))
 done
 
 # 日付、曜日、最高・最低気温、天気を表示
 for (( i = 0; i < $DAYS; ++i ))
 do
-HI[$i]=`echo "${DATA_WEEK[$i]}" | grep -A1 'day:' | grep 'dTemp' | awk -F: '{print $2}'`
-LO[$i]=`echo "${DATA_WEEK[$i]}" | grep -A1 'night:' | grep 'dTemp' | awk -F: '{print $2}'`
-[ $DATE_B -eq 1 ] && printf "%5s " "$(echo "${DATA_WEEK[$i]}" | grep 'date:' | awk -F: '{print $2}')"
-[ $DOW -eq 1 ] && printf "($(echo "${DATA_WEEK[$i]}" | grep -m1 'dow:' | awk -F: '{print $2}' | sed -E s/Sat\|土/`printf "\033[0;${SAT_COLOR}m"`\&/ | sed -E s/Sun\|日/`printf "\033[0;${SUN_COLOR}m"`\&/ | sed -E 's/$/'`printf "\033[0m"`'/'))\t "
+HI[$i]=$(pickup_d_n_word "${DATA_WEEK[$i]}" 'day:' 'dTemp')
+LO[$i]=$(pickup_d_n_word "${DATA_WEEK[$i]}" 'night:' 'dTemp')
+[ $DATE_B -eq 1 ] && printf "%5s " "$(pickup_word "${DATA_WEEK[$i]}" 'date:')"
+if [ $DOW -eq 1 ]; then
+  if [ $(date -v+$(($LATER+$i))d +%w) -eq 6 ]; then
+    printf "\033[0;${SAT_COLOR}m"
+  elif [ $(date -v+$(($LATER+$i))d +%w) -eq 0 ]; then
+    printf "\033[0;${SUN_COLOR}m"
+  fi
+  printf "($(pickup_word "${DATA_WEEK[$i]}" 'dow:' | sed -E 's/$/'`printf "\033[0m"`'/'))\t "
+fi
 printf "%3s/%3s  " ${HI[$i]} ${LO[$i]}
-echo "${DATA_WEEK[$i]}" | grep -m1 "$DETAIL" | awk -F: '{print $2}'
+pickup_word "${DATA_WEEK[$i]}" "$DETAIL"
 done
 
 # 天気アイコンのナンバーを取得して画像を保存（取得するアイコンのナンバーはゼロパディングする）
 for (( i = 0; i < $DAYS; ++i ))
 do
-ICON_WEEK[$i]=`echo "${DATA_WEEK[$i]}" | grep -m1 'icon' | awk -F: '{printf "%02d",$2}'`
+ICON_WEEK[$i]=$(printf "%02d" $(pickup_word "${DATA_WEEK[$i]}" 'icon'))
 echo "https://vortex.accuweather.com/adc2010/images/slate/icons/"${ICON_WEEK[$i]}"-l.png" | xargs curl --silent -o /tmp/weather_week_$(($i)).png
 done
 

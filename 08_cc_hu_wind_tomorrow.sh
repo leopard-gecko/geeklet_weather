@@ -24,11 +24,16 @@ if [ $PRECIP -eq 1 ];      then pr='\|precip:';   else pr=''; fi
 
 if [ $LINE_FEED -eq 1 ]; then lf='\\n'; else lf='\\t'; fi
 
+# データ整理用関数
+pickup_data() { echo "$1" | grep -m1 $2 | tr '{|}' '\n' | perl -pe 's/,"/\n/g' | tr -d '"'; }
+pickup_word() { echo "$1" | grep -m1 $2 | awk -F: '{print $2}'; }
+
 # 元データ取得
-WEATHER_DATA=$(curl -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X)' --silent ${WEATHER_URL/weather-forecast/daily-weather-forecast}?day=$(($LATER+1)))
-DATA_TOMORROW=$(echo "$WEATHER_DATA" | grep 'var today' | tr '{|}' '\n' | sed s/',"'/\\$'\n'/g | tr -d '"' | awk '/date:/,/lDate:/')
+USER_AGENT='User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X)'
+WEATHER_DATA=$(curl -H "$USER_AGENT" --silent ${WEATHER_URL/weather-forecast/daily-weather-forecast}?day=$(($LATER+1)))
+DATA_TOMORROW=$(pickup_data "$WEATHER_DATA" 'today' | awk '/date:/,/night:/') 
 DATA_LOCALE=$(echo "$WEATHER_DATA" | grep -e 'pageLocale' |  tr '{|}' '\n' | sed s/',"'/\\$'\n'/g | tr -d '"')
 
-# 現在の雲量、湿度、風速・風向きを取得して表示
-echo "$DATA_TOMORROW" | grep -A2 $(echo $ui) | tr '\n' ':' | awk -F: -v uvi="$(echo "$DATA_LOCALE" | grep 'maxUV:' | awk -F: '{print $2}')" '{print uvi": "$6,"("$4")"}' | sed "s/$/    /g" | tr '\n' "$(echo $lf)"
-echo "$DATA_TOMORROW" | grep ''$(echo $cc$wi$pr)'' | sed "s/$/    /g" | tr '\n' "$(echo $lf)" | sed -e s/cc:/"$(echo "$DATA_LOCALE" | grep 'cloudCover:' | awk -F: '{print $2}'): "/g -e s/wind:/"$(echo "$DATA_LOCALE" | grep 'wind:' | awk -F: '{print $2}'): "/g -e s/precip:/"$(echo "$DATA_LOCALE" | grep 'precip:' | awk -F: '{print $2}'): "/g
+# 明日の雲量、湿度、風速・風向きを取得して表示
+echo "$DATA_TOMORROW" | grep -A2 $(echo $ui) | tr '\n' ':' | awk -F: -v uvi="$(pickup_word "$DATA_LOCALE" 'maxUV:')" '{print uvi": "$6,"("$4")"}' | sed "s/$/    /g" | tr '\n' "$(echo $lf)"
+echo "$DATA_TOMORROW" | grep ''$(echo $cc$wi$pr)'' | sed "s/$/    /g" | tr '\n' "$(echo $lf)" | sed -e s/cc:/"$(pickup_word "$DATA_LOCALE" 'cloudCover:'): "/g -e s/wind:/"$(pickup_word "$DATA_LOCALE" 'wind:'): "/g -e s/precip:/"$(pickup_word "$DATA_LOCALE" 'precip:'): "/g
