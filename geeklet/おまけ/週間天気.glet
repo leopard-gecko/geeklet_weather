@@ -52,10 +52,14 @@ if [ $DOW -eq 1 ]; then
   elif [ $(date -v+$(($LATER+$i))d +%w) -eq 0 ]; then
     printf "\033[0;${SUN_COLOR}m"
   fi
-  printf "$(pickup_word "${DATA_WEEK[$i]}" 'dow:' | sed -E 's/$/'`printf "\033[0m"`'/'))   \t "
+  printf "$(pickup_word "${DATA_WEEK[$i]}" 'dow:' | sed -E 's/$/'`printf "\033[0m"`'/'))   \t"
 fi
-printf "%3s/%3s  " ${HI[$i]} ${LO[$i]}
-echo "☂️ "$(printf "%5s" $(pickup_word "${DATA_WEEK[$i]}" 'precip'))"\t"$(pickup_word "${DATA_WEEK[$i]}" "$DETAIL")
+
+printf "%5s/%5s\t☂️:%4s \t" ${HI[$i]} ${LO[$i]} $(pickup_word "${DATA_WEEK[$i]}" "precip")
+pickup_word "${DATA_WEEK[$i]}" "$DETAIL"
+
+#printf "%3s/%3s  " ${HI[$i]} ${LO[$i]}
+#echo "☂️ "$(printf "%5s" $(pickup_word "${DATA_WEEK[$i]}" 'precip'))"\t"$(pickup_word "${DATA_WEEK[$i]}" "$DETAIL")
 done
 
 # 天気アイコンのナンバーを取得して画像を保存（取得するアイコンのナンバーはゼロパディングする）
