@@ -30,9 +30,10 @@ pickup_word() { echo "$1" | grep -m1 $2 | awk -F: '{print $2}'; }
 # 元データ取得
 USER_AGENT='User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X)'
 WEATHER_DATA=$(curl -H "$USER_AGENT" --silent ${WEATHER_URL/weather-forecast/current-weather})
+WEATHER_HOUR=$(curl -H "$USER_AGENT" --silent ${WEATHER_URL/weather-forecast/hourly-weather-forecast})
 DATA_CUR=$(pickup_data "$WEATHER_DATA" 'curCon')
-DATA_LOCALE=$(pickup_data "$WEATHER_DATA" 'pageLocale')
+DATA_LOCALE=$(pickup_data "$WEATHER_DATA" 'pageLocale')$(pickup_data "$WEATHER_HOUR" 'pageLocale')
 
 # 現在の雲量、湿度、風速・風向きを取得して表示
-echo "$DATA_CUR" | grep -A2 $(echo $UI) | tr '\n' ':' | awk -F: -v uvi="$(pickup_word "$DATA_LOCALE" 'uv:')" '{print uvi": "$6,"("$4")"}' | tr '\n' "$(echo $LF)"
+echo "$DATA_CUR" | grep -A2 $(echo $UI) | tr '\n' ':' | awk -F: -v uvi="$(pickup_word "$DATA_LOCALE" 'uvIndex:')" '{print uvi": "$6,"("$4")"}' | tr '\n' "$(echo $LF)"
 echo "$DATA_CUR" | grep ''$(echo $CC)$(echo $HU)$(echo $PR)$(echo $WI)'' | tr '\n' "$(echo $LF)" | sed -e s/cc:/"$(pickup_word "$DATA_LOCALE" 'cloudCover:'): "/g -e s/humidity:/"$(pickup_word "$DATA_LOCALE" 'humidity:'): "/g -e s/pressure:/"$(pickup_word "$DATA_LOCALE" 'pressure:'): "/g -e s/mbar/'hPa'/g -e s/wind:/"$(pickup_word "$DATA_LOCALE" 'wind:'): "/g | sed s/"`printf '\t'`"/'    '/g

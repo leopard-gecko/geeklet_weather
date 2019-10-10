@@ -41,15 +41,16 @@ HI[$i]=$(pickup_d_n_word "${DATA_WEEK[$i]}" 'day:' 'dTemp')
 LO[$i]=$(pickup_d_n_word "${DATA_WEEK[$i]}" 'night:' 'dTemp')
 [ $DATE_B -eq 1 ] && printf "%5s " "$(pickup_word "${DATA_WEEK[$i]}" 'date:')"
 if [ $DOW -eq 1 ]; then
+  printf "("
   if [ $(date -v+$(($LATER+$i))d +%w) -eq 6 ]; then
     printf "\033[0;${SAT_COLOR}m"
   elif [ $(date -v+$(($LATER+$i))d +%w) -eq 0 ]; then
     printf "\033[0;${SUN_COLOR}m"
   fi
-  printf "($(pickup_word "${DATA_WEEK[$i]}" 'dow:' | sed -E 's/$/'`printf "\033[0m"`'/'))\t "
+  printf "$(pickup_word "${DATA_WEEK[$i]}" 'dow:' | sed -E 's/$/'`printf "\033[0m"`'/'))   \t "
 fi
 printf "%3s/%3s  " ${HI[$i]} ${LO[$i]}
-pickup_word "${DATA_WEEK[$i]}" "$DETAIL"
+echo "☂️ "$(printf "%5s" $(pickup_word "${DATA_WEEK[$i]}" 'precip'))"\t"$(pickup_word "${DATA_WEEK[$i]}" "$DETAIL")
 done
 
 # 天気アイコンのナンバーを取得して画像を保存（取得するアイコンのナンバーはゼロパディングする）
