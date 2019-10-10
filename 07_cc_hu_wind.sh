@@ -8,7 +8,7 @@ WEATHER_URL=${WEATHER_URL:='https://www.accuweather.com/en/jp/koto-ku/221230/wea
 UV_INDEX=1      #紫外線
 CLOUD_COVER=1   #雲量
 HUMIDITY=1      #湿度
-PRESSURE=1      #気圧
+PRESSURE=0      #気圧
 WIND=1          #風速・風向き
 
 # 改行表示（0 改行しない、1 改行する）
