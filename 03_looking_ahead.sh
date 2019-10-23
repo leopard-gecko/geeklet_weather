@@ -13,8 +13,8 @@ pickup_data() { echo "$1" | grep -m1 $2 | tr '{|}' '\n' | perl -pe 's/,"/\n/g' |
 pickup_word() { echo "$1" | grep -m1 $2 | awk -F: '{print $2}'; }
 
 # 元データ取得
-USER_AGENT='User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X)'
-WEATHER_DATA=$(curl -H "$USER_AGENT" --silent $WEATHER_URL)
+USER_AGENT='Mozilla/5.0 (Macintosh; Intel Mac OS X)'
+WEATHER_DATA=$(curl -A "$USER_AGENT" --silent $WEATHER_URL)
 DATA_LA=$(pickup_data "$WEATHER_DATA" 'localSummary')
 DATA_LOCALE=$(pickup_data "$WEATHER_DATA" 'pageLocale')
 

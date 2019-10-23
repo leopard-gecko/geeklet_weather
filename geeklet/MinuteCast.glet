@@ -23,8 +23,8 @@ pickup_data() { echo "$1" | grep -m1 $2 | tr '{|}' '\n' | perl -pe 's/,"/\n/g' |
 pickup_word() { echo "$1" | grep -m1 $2 | awk -F: '{print $2}'; }
 
 # 元データ取得
-USER_AGENT='User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X)'
-WEATHER_DATA=$(curl -H "$USER_AGENT" --silent $WEATHER_URL)
+USER_AGENT='Mozilla/5.0 (Macintosh; Intel Mac OS X)'
+WEATHER_DATA=$(curl -A "$USER_AGENT" --silent $WEATHER_URL)
 DATA_MC=$(pickup_data "$WEATHER_DATA" 'minuteCastSummary')
 
 # MINUTECASTを取得して表示
@@ -135,7 +135,7 @@ fi
 	<key>FontSize</key>
 	<real>24</real>
 	<key>GeekletFrame</key>
-	<string>{{249.55078125, 210.91796875}, {677, 30}}</string>
+	<string>{{245, 218.99609375}, {677, 30}}</string>
 	<key>HasShadow</key>
 	<false/>
 	<key>Identifier</key>

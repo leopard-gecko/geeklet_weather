@@ -65,9 +65,9 @@ display_data() {
 }
 
 # 元データ取得
-USER_AGENT='User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X)'
-WEATHER_DATA0=$(curl -H "$USER_AGENT" --silent ${WEATHER_URL/weather-forecast/hourly-weather-forecast})
-WEATHER_DATA1=$(curl -H "$USER_AGENT" --silent ${WEATHER_URL/weather-forecast/hourly-weather-forecast}"?day=2")
+USER_AGENT='Mozilla/5.0 (Macintosh; Intel Mac OS X)'
+WEATHER_DATA0=$(curl -A "$USER_AGENT" --silent ${WEATHER_URL/weather-forecast/hourly-weather-forecast})
+WEATHER_DATA1=$(curl -A "$USER_AGENT" --silent ${WEATHER_URL/weather-forecast/hourly-weather-forecast}"?day=2")
 DATA_HOUR=$(echo "$WEATHER_DATA0" "$WEATHER_DATA1"| grep 'hourlyForecast' | perl -pe "s/},{/\n/g" | tr '[|]' '\n' | grep 'extended' | tr -d '{|}' | sed -n 1,$(echo $HOUR)p)
 DATA_LOCALE=$(pickup_data "$WEATHER_DATA0" 'pageLocale')
 
@@ -76,7 +76,7 @@ _IFS="$IFS";IFS="
 "
 CURRENT_TIME=($(pickup_array_word "$DATA_HOUR" 'localTime')) 
 CURRENT_TEMP=($(pickup_array_word "$DATA_HOUR" 'temp' | sed -e 's/[^0-9]//g'))
-#CURRENT_TEMP=($(pickup_array_word "$DATA_HOUR" 'temp' | sed -e 's/[^0-9]//g' | sed -E 's/$/℃/'))
+#CURRENT_TEMP=($(pickup_array_word "$DATA_HOUR" 'temp' | sed -e 's/[^0-9]//g' | sed -E 's/$/℃/'))  # 等倍表示可能な日本語フォントで使用可能
 CURRENT_PRECIP=($(pickup_array_word "$DATA_HOUR" 'precip')) 
 CURRENT_RAIN=($(pickup_array_word "$DATA_HOUR" 'rain')) 
 CURRENT_WIND=($(pickup_array_word "$DATA_HOUR" 'wind')) 

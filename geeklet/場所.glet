@@ -14,8 +14,8 @@ WEATHER_URL=${WEATHER_URL:='https://www.accuweather.com/en/jp/koto-ku/221230/wea
 pickup_data() { echo "$1" | grep -m1 $2 | tr '{|}' '\n' | perl -pe 's/,"/\n/g' | tr -d '"'; }
 
 # 元データ取得
-USER_AGENT='User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X)'
-WEATHER_DATA=$(curl -H "$USER_AGENT" --silent $WEATHER_URL)
+USER_AGENT='Mozilla/5.0 (Macintosh; Intel Mac OS X)'
+WEATHER_DATA=$(curl -A "$USER_AGENT" --silent $WEATHER_URL)
 
 # 表示
 pickup_data "$WEATHER_DATA" 'currentLocation' | grep localizedName | awk -F: '{print $2}' | tr '\n' ',' | awk -F, '{printf "%s, %s\n",$3,$1}'</string>
@@ -69,7 +69,7 @@ pickup_data "$WEATHER_DATA" 'currentLocation' | grep localizedName | awk -F: '{p
 	<key>FontSize</key>
 	<real>18</real>
 	<key>GeekletFrame</key>
-	<string>{{247.96875, 91.96875}, {201, 30}}</string>
+	<string>{{245, 90}, {201, 30}}</string>
 	<key>HasShadow</key>
 	<false/>
 	<key>Identifier</key>

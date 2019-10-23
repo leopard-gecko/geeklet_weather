@@ -2,7 +2,7 @@
 [ -f "$HOME/.bashrc" ] && source "$HOME/.bashrc"
 [ -f "$HOME/.zshrc" ] && source "$HOME/.zshrc"
 
-# 場所のURL（日本語表記にしたい場合は/en/を/ja/に書き換える）
+# 場所のURL （日本語表記にしたい場合は/en/を/ja/に書き換える）
 WEATHER_URL=${WEATHER_URL:='https://www.accuweather.com/en/jp/koto-ku/221230/weather-forecast/221230'}
 
 # 何日間？
@@ -12,7 +12,7 @@ AFTER=1
 # 週末だけ表示？(0 週間表示、1 週末のみ表示)
 WEEKEND=1
 # 日付を表示する？（0 表示しない、1 表示する）
-DATE_B=1
+DATE_B=0
 # 曜日を表示する？（0 表示しない、1 簡略表示、2 詳細表示）
 DOW=2
 # 天気の詳細（phrase 簡略表示、longPhrase 詳細表示）
@@ -38,8 +38,8 @@ pickup_d_n_word() { echo "$1" | grep -A7 $2 | grep -m1 $3 | awk -F: '{print $2}'
 pickup_word() { echo "$1" | grep -m1 $2 | awk -F: '{print $2}'; }
 
 # 元データ取得（日曜日の場合は翌週の週末を取得する）
-USER_AGENT='User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X)'
-WEATHER_DATA=$(curl -H "$USER_AGENT" --silent $WEATHER_URL)
+USER_AGENT='Mozilla/5.0 (Macintosh; Intel Mac OS X)'
+WEATHER_DATA=$(curl -A "$USER_AGENT" --silent $WEATHER_URL)
 for (( i = 0; i < $NUM_L; ++i ))
 do
   DATA_WEEK[$i]=$(pickup_day_data "$WEATHER_DATA" 'dailyForecast' $(date -v+$(($AFTER+$i))d '+%Y-%m-%d'))

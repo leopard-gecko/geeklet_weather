@@ -38,8 +38,8 @@ pickup_data() { echo "$1" | grep -m1 $2 | tr '{|}' '\n' | perl -pe 's/,"/\n/g' |
 pickup_word() { echo "$1" | grep -m1 $2 | awk -F: '{print $2}'; }
 
 # 元データ取得
-USER_AGENT='User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X)'
-WEATHER_DATA=$(curl -H "$USER_AGENT" --silent ${WEATHER_URL/weather-forecast/daily-weather-forecast}?day=$(($LATER+1)))
+USER_AGENT='Mozilla/5.0 (Macintosh; Intel Mac OS X)'
+WEATHER_DATA=$(curl -A "$USER_AGENT" --silent ${WEATHER_URL/weather-forecast/daily-weather-forecast}?day=$(($LATER+1)))
 DATA_DATE=$(pickup_data "$WEATHER_DATA" 'today' | awk '/date:/,/night:/') 
 DATA_LOCALE=$(echo "$WEATHER_DATA" | grep -e 'pageLocale' |  tr '{|}' '\n' | sed s/',"'/\\$'\n'/g | tr -d '"')
 
@@ -98,7 +98,7 @@ echo "$DATA_DATE" | grep ''$(echo $cc$wi$pr)'' | sed "s/$/    /g" | tr '\n' "$(e
 	<key>FontSize</key>
 	<real>14</real>
 	<key>GeekletFrame</key>
-	<string>{{350, 443.8125}, {724, 45}}</string>
+	<string>{{245, 250}, {724, 30}}</string>
 	<key>HasShadow</key>
 	<false/>
 	<key>Identifier</key>

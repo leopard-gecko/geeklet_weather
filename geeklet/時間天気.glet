@@ -21,14 +21,14 @@ COLUM=2
 NLF=5
 # 表示桁数
 MY_STRLN=15
+# 見出しの文字数
+MY_INDEX=9
 # 気温、降水確率、雨量、風速、フレーズを表示する？（1 表示する、0 表示しない）
 TEMP=1
 PRECIP=1
 RAIN=1
 WIND=1
 PHRASE=0
-# 見出しの文字数
-MY_INDEX=9
 # 天気アイコンを取得する？（1 取得する、0 取得しない）
 ICON_B=1
 # AMとPMの色  30 黒、31 赤、32 緑、33 黄、34 青、35 マゼンタ、36 シアン、37 白、0 デフォルト
@@ -70,9 +70,9 @@ display_data() {
 }
 
 # 元データ取得
-USER_AGENT='User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X)'
-WEATHER_DATA0=$(curl -H "$USER_AGENT" --silent ${WEATHER_URL/weather-forecast/hourly-weather-forecast})
-WEATHER_DATA1=$(curl -H "$USER_AGENT" --silent ${WEATHER_URL/weather-forecast/hourly-weather-forecast}"?day=2")
+USER_AGENT='Mozilla/5.0 (Macintosh; Intel Mac OS X)'
+WEATHER_DATA0=$(curl -A "$USER_AGENT" --silent ${WEATHER_URL/weather-forecast/hourly-weather-forecast})
+WEATHER_DATA1=$(curl -A "$USER_AGENT" --silent ${WEATHER_URL/weather-forecast/hourly-weather-forecast}"?day=2")
 DATA_HOUR=$(echo "$WEATHER_DATA0" "$WEATHER_DATA1"| grep 'hourlyForecast' | perl -pe "s/},{/\n/g" | tr '[|]' '\n' | grep 'extended' | tr -d '{|}' | sed -n 1,$(echo $HOUR)p)
 DATA_LOCALE=$(pickup_data "$WEATHER_DATA0" 'pageLocale')
 
@@ -81,7 +81,7 @@ _IFS="$IFS";IFS="
 "
 CURRENT_TIME=($(pickup_array_word "$DATA_HOUR" 'localTime')) 
 CURRENT_TEMP=($(pickup_array_word "$DATA_HOUR" 'temp' | sed -e 's/[^0-9]//g'))
-#CURRENT_TEMP=($(pickup_array_word "$DATA_HOUR" 'temp' | sed -e 's/[^0-9]//g' | sed -E 's/$/℃/'))
+#CURRENT_TEMP=($(pickup_array_word "$DATA_HOUR" 'temp' | sed -e 's/[^0-9]//g' | sed -E 's/$/℃/'))  # 等倍表示可能な日本語フォントで使用可能
 CURRENT_PRECIP=($(pickup_array_word "$DATA_HOUR" 'precip')) 
 CURRENT_RAIN=($(pickup_array_word "$DATA_HOUR" 'rain')) 
 CURRENT_WIND=($(pickup_array_word "$DATA_HOUR" 'wind')) 

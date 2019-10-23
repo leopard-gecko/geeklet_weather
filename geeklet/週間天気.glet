@@ -43,8 +43,8 @@ pickup_d_n_word() { echo "$1" | grep -A7 $2 | grep -m1 $3 | awk -F: '{print $2}'
 pickup_word() { echo "$1" | grep -m1 $2 | awk -F: '{print $2}'; }
 
 # 元データ取得（日曜日の場合は翌週の週末を取得する）
-USER_AGENT='User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X)'
-WEATHER_DATA=$(curl -H "$USER_AGENT" --silent $WEATHER_URL)
+USER_AGENT='Mozilla/5.0 (Macintosh; Intel Mac OS X)'
+WEATHER_DATA=$(curl -A "$USER_AGENT" --silent $WEATHER_URL)
 for (( i = 0; i &lt; $NUM_L; ++i ))
 do
   DATA_WEEK[$i]=$(pickup_day_data "$WEATHER_DATA" 'dailyForecast' $(date -v+$(($AFTER+$i))d '+%Y-%m-%d'))
@@ -132,7 +132,7 @@ EOT
 	<key>FontSize</key>
 	<real>16</real>
 	<key>GeekletFrame</key>
-	<string>{{450, 481}, {240, 150}}</string>
+	<string>{{450, 481}, {240, 560}}</string>
 	<key>HasShadow</key>
 	<false/>
 	<key>Identifier</key>
