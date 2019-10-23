@@ -15,8 +15,8 @@ WEEKEND=1
 DATE_B=0
 # 曜日を表示する？（0 表示しない、1 簡略表示、2 詳細表示）
 DOW=2
-# 天気の詳細（phrase 簡略表示、longPhrase 詳細表示）
-DETAIL=phrase
+# 天気の詳細（0 表示しない、1 簡略表示、2 詳細表示）
+DETAIL=1
 # 天気アイコンを取得する？（1 取得する、0 取得しない）
 ICON_B=1
 # 土曜日と日曜日の色 （30 黒、31 赤、32 緑、33 黄、34 青、35 マゼンタ、36 シアン、37 白、0 デフォルト）
@@ -31,6 +31,8 @@ AFTER=$(expr 6 - $(date +%w))
 fi
 [ $DOW -eq 1 ] && MYDOW='dow:'
 [ $DOW -eq 2 ] && MYDOW='lDOW:'
+[ $DETAIL -eq 1 ] && PHRASE='phrase'
+[ $DETAIL -eq 2 ] && PHRASE='longPhrase'
 
 # データ整理用関数
 pickup_day_data() { echo "$1" | grep -m1 $2 | tr '{|}' '\n' | grep -A3 $3 | perl -pe 's/,"/\n/g' | tr -d '"'; }
@@ -55,7 +57,7 @@ do
   [ $DATE_B -eq 1 ] && printf "%5s\t" "$(pickup_word "${DATA_WEEK[$i]}" 'date:')"
   [[ $DOW =~ 1|2 ]] && printf "$(pickup_word "${DATA_WEEK[$i]}" $MYDOW | sed -E s/$LOCALE_SAT/$(printf "\033[0;${SAT_COLOR}m")\&/ | sed -E s/$LOCALE_SUN/$(printf "\033[0;${SUN_COLOR}m")\&/ | sed -E 's/$/'$(printf "\033[0m")'/')\n"
   printf "%-5s/%-5s\t☂️ :%4s\n" ${HI[$i]} ${LO[$i]} $(pickup_word "${DATA_WEEK[$i]}" 'precip')
-  pickup_word "${DATA_WEEK[$i]}" "$DETAIL"
+  [[ $DETAIL =~ 1|2 ]] && pickup_word "${DATA_WEEK[$i]}" "$PHRASE"
   echo
 done
 

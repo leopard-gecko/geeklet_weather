@@ -15,12 +15,16 @@ FLG_C=0  # 現在
 FLG_D=1  # 日中
 FLG_N=1  # 夜間
 FLG_T=1  # 明日
-# 天気の詳細（phrase 簡略表示、longPhrase 詳細表示）
-DETAIL=phrase
+# 天気の詳細（0 表示しない、1 簡略表示、2 詳細表示）
+DETAIL=1
 # 天気アイコンを取得する？（1 取得する、0 取得しない）
 ICON_B=1
 # 見出しの色 （30 黒、31 赤、32 緑、33 黄、34 青、35 マゼンタ、36 シアン、37 白、0 デフォルト）
 C_COLOR="37;40"
+
+# 設定
+[ $DETAIL -eq 1 ] &amp;&amp; PHRASE='phrase'
+[ $DETAIL -eq 2 ] &amp;&amp; PHRASE='longPhrase'
 
 # データ整理用関数
 pickup_day_data() { echo "$1" | grep -m1 $2 | tr '{|}' '\n' | grep -A3 $3 | perl -pe 's/,"/\n/g' | tr -d '"'; }
@@ -47,7 +51,7 @@ TEMP_TODAY=$(pickup_word "$DATA_CUR" 'temp')
 if [ $FLG_C -eq 1 ]; then
   echo "\033[0;${C_COLOR}m"$(echo "$DATA_LOCALE" | grep -A2 'CurConPanel:' | grep 'title' | awk -F: '{print $2}')"\033[0m"
   printf "%-5s\n" $TEMP_TODAY
-  pickup_word "$DATA_CUR" 'phrase'
+  [[ $DETAIL =~ 1|2 ]] &amp;&amp; pickup_word "$DATA_CUR" 'phrase'
   echo
   if [ $ICON_B -eq 1 ]; then
     ICON_CUR=$(printf "%02d" $(pickup_word "$DATA_CUR" 'icon'))
@@ -57,7 +61,7 @@ fi
 if [ $FLG_D -eq 1 ]; then
   printf "\033[0;${C_COLOR}m%s\033[0m\n" $(pickup_word "$DATA_LOCALE" 'today:')
   printf "%-5s %-5s \t☂️: %4s\n" $HI_TODAY $(pickup_word "$DATA_LOCALE" 'high:') $(pickup_d_n_word "$DATA_TODAY" 'day:' 'precip')
-  pickup_d_n_word "$DATA_TODAY" 'day:' "$DETAIL"
+  [[ $DETAIL =~ 1|2 ]] &amp;&amp; pickup_d_n_word "$DATA_TODAY" 'day:' "$PHRASE"
   echo
   if [ $ICON_B -eq 1 ]; then
     ICON_TODAY=$(printf "%02d" $(pickup_d_n_word "$DATA_TODAY" 'day:' 'icon'))
@@ -67,7 +71,7 @@ fi
 if [ $FLG_N -eq 1 ]; then
   printf "\033[0;${C_COLOR}m%s\033[0m\n" $(pickup_word "$DATA_LOCALE" 'tonight:')
   printf "%-5s %-5s \t☂️: %4s\n" $LO_TODAY $(pickup_word "$DATA_LOCALE" 'low:') $(pickup_d_n_word "$DATA_TODAY" 'night:' 'precip')
-  pickup_d_n_word "$DATA_TODAY" 'night:' "$DETAIL"
+  [[ $DETAIL =~ 1|2 ]] &amp;&amp; pickup_d_n_word "$DATA_TODAY" 'night:' "$PHRASE"
   echo
   if [ $ICON_B -eq 1 ]; then
     ICON_TONIGHT=$(printf "%02d" $(pickup_d_n_word "$DATA_TODAY" 'night:' 'icon'))
@@ -77,7 +81,7 @@ fi
 if [ $FLG_T -eq 1 ]; then
   printf "\033[0;${C_COLOR}m%s\033[0m\n" $(pickup_word "$DATA_LOCALE" 'tomorrow:')
   printf "%-5s/%-5s\t☂️: %4s\n" $HI_TOMORROW $LO_TOMORROW $(pickup_word "$DATA_TOMORROW" "precip")
-  pickup_d_n_word "$DATA_TOMORROW" 'day:' "$DETAIL"
+  [[ $DETAIL =~ 1|2 ]] &amp;&amp; pickup_d_n_word "$DATA_TOMORROW" 'day:' "$PHRASE"
   if [ $ICON_B -eq 1 ]; then
     ICON_TOMORROW=$(printf "%02d" $(pickup_d_n_word "$DATA_TOMORROW" 'day:' 'icon'))
     echo "https://vortex.accuweather.com/adc2010/images/slate/icons/"$ICON_TOMORROW"-l.png" | xargs curl --silent -o /tmp/weather_tomorrow.png
