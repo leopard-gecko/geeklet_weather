@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Command</key>
+	<string># 現在、日中、夜間、明日のスクリプト
+[ -f "$HOME/.bashrc" ] &amp;&amp; source "$HOME/.bashrc"
+[ -f "$HOME/.zshrc" ] &amp;&amp; source "$HOME/.zshrc"
+
+# 場所のURL
+WEATHER_URL=${WEATHER_URL:='https://www.accuweather.com/en/jp/koto-ku/221230/weather-forecast/221230'}
+
+# 表示する要素（1 表示する、0 表示しない）
+FLG_C=0  # 現在
+FLG_D=1  # 日中
+FLG_N=1  # 夜間
+FLG_T=1  # 明日
+# 天気の詳細（phrase 簡略表示、longPhrase 詳細表示）
+DETAIL=phrase
+# 天気アイコンを取得する？（1 取得する、0 取得しない）
+ICON_B=1
+# 見出しの色 （30 黒、31 赤、32 緑、33 黄、34 青、35 マゼンタ、36 シアン、37 白、0 デフォルト）
+C_COLOR="37;40"
+
+# データ整理用関数
+pickup_day_data() { echo "$1" | grep -m1 $2 | tr '{|}' '\n' | grep -A3 $3 | perl -pe 's/,"/\n/g' | tr -d '"'; }
+pickup_d_n_word() { echo "$1" | grep -A7 $2 | grep -m1 $3 | awk -F: '{print $2}'; }
+pickup_data() { echo "$1" | grep -m1 $2 | tr '{|}' '\n' | perl -pe 's/,"/\n/g' | tr -d '"'; }
+pickup_word() { echo "$1" | grep -m1 $2 | awk -F: '{print $2}'; }
+
+# 元データ取得
+USER_AGENT='User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X)'
+WEATHER_DATA="$(curl -H "$USER_AGENT" --silent $WEATHER_URL)"
+DATA_CUR="$(pickup_data "$WEATHER_DATA" 'curCon')"
+DATA_TODAY="$(pickup_day_data "$WEATHER_DATA" 'dailyForecast' $(date '+%Y-%m-%d'))"
+DATA_TOMORROW="$(pickup_day_data "$WEATHER_DATA" 'dailyForecast' $(date -v+1d '+%Y-%m-%d'))"
+DATA_LOCALE="$(pickup_data "$WEATHER_DATA" 'pageLocale')"
+
+# 温度を取得
+HI_TODAY=$(pickup_d_n_word "$DATA_TODAY" 'day:' 'dTemp')
+LO_TODAY=$(pickup_d_n_word "$DATA_TODAY" 'night:' 'dTemp')
+HI_TOMORROW=$(pickup_d_n_word "$DATA_TOMORROW" 'day:' 'dTemp')
+LO_TOMORROW=$(pickup_d_n_word "$DATA_TOMORROW" 'night:' 'dTemp')
+TEMP_TODAY=$(pickup_word "$DATA_CUR" 'temp')
+
+#  現在、日中、夜間、明日の天気を表示して天気アイコンを取得し保存
+if [ $FLG_C -eq 1 ]; then
+  echo "\033[0;${C_COLOR}m"$(echo "$DATA_LOCALE" | grep -A2 'CurConPanel:' | grep 'title' | awk -F: '{print $2}')"\033[0m"
+  printf "%-5s\n" $TEMP_TODAY
+  pickup_word "$DATA_CUR" 'phrase'
+  echo
+  if [ $ICON_B -eq 1 ]; then
+    ICON_CUR=$(printf "%02d" $(pickup_word "$DATA_CUR" 'icon'))
+    echo "https://vortex.accuweather.com/adc2010/images/slate/icons/"$ICON_CUR"-l.png" | xargs curl --silent -o /tmp/weather_current.png
+  fi
+fi
+if [ $FLG_D -eq 1 ]; then
+  printf "\033[0;${C_COLOR}m%s\033[0m\n" $(pickup_word "$DATA_LOCALE" 'today:')
+  printf "%-5s %-5s \t☂️: %4s\n" $HI_TODAY $(pickup_word "$DATA_LOCALE" 'high:') $(pickup_d_n_word "$DATA_TODAY" 'day:' 'precip')
+  pickup_d_n_word "$DATA_TODAY" 'day:' "$DETAIL"
+  echo
+  if [ $ICON_B -eq 1 ]; then
+    ICON_TODAY=$(printf "%02d" $(pickup_d_n_word "$DATA_TODAY" 'day:' 'icon'))
+    echo "https://vortex.accuweather.com/adc2010/images/slate/icons/"$ICON_TODAY"-l.png" | xargs curl --silent -o /tmp/weather_today.png
+  fi
+fi
+if [ $FLG_N -eq 1 ]; then
+  printf "\033[0;${C_COLOR}m%s\033[0m\n" $(pickup_word "$DATA_LOCALE" 'tonight:')
+  printf "%-5s %-5s \t☂️: %4s\n" $LO_TODAY $(pickup_word "$DATA_LOCALE" 'low:') $(pickup_d_n_word "$DATA_TODAY" 'night:' 'precip')
+  pickup_d_n_word "$DATA_TODAY" 'night:' "$DETAIL"
+  echo
+  if [ $ICON_B -eq 1 ]; then
+    ICON_TONIGHT=$(printf "%02d" $(pickup_d_n_word "$DATA_TODAY" 'night:' 'icon'))
+    echo "https://vortex.accuweather.com/adc2010/images/slate/icons/"$ICON_TONIGHT"-l.png" | xargs curl --silent -o /tmp/weather_tonight.png
+  fi
+fi
+if [ $FLG_T -eq 1 ]; then
+  printf "\033[0;${C_COLOR}m%s\033[0m\n" $(pickup_word "$DATA_LOCALE" 'tomorrow:')
+  printf "%-5s/%-5s\t☂️: %4s\n" $HI_TOMORROW $LO_TOMORROW $(pickup_word "$DATA_TOMORROW" "precip")
+  pickup_d_n_word "$DATA_TOMORROW" 'day:' "$DETAIL"
+  if [ $ICON_B -eq 1 ]; then
+    ICON_TOMORROW=$(printf "%02d" $(pickup_d_n_word "$DATA_TOMORROW" 'day:' 'icon'))
+    echo "https://vortex.accuweather.com/adc2010/images/slate/icons/"$ICON_TOMORROW"-l.png" | xargs curl --silent -o /tmp/weather_tomorrow.png
+  fi
+fi
+
+# 画像GeekletをRefleshする
+osascript &lt;&lt;EOT
+  tell application "GeekTool Helper"
+    tell image geeklets to refresh
+  end tell
+EOT</string>
+	<key>DisplayID</key>
+	<integer>1892209665</integer>
+	<key>DropShadow</key>
+	<false/>
+	<key>FailureImage</key>
+	<data>
+	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
+	</data>
+	<key>FontFamily</key>
+	<string>HelveticaNeue-Light</string>
+	<key>FontSize</key>
+	<real>16</real>
+	<key>ForceCR</key>
+	<false/>
+	<key>GeekletFrame</key>
+	<string>{{140, 400.09765625}, {240, 230}}</string>
+	<key>HasShadow</key>
+	<false/>
+	<key>Identifier</key>
+	<string>org.tynsoe.geeklet.shell</string>
+	<key>Name</key>
+	<string>04_current_day_night_tomorrow</string>
+	<key>RefreshInterval</key>
+	<integer>600</integer>
+	<key>SetLocale</key>
+	<true/>
+	<key>SuccessImage</key>
+	<data>
+	TU0AKgAABAj///8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAANAAAAGgAAACAAAAAaAAAA
+	DQAAAAAAAAAAAAAAAAAAAAAAAAAA////AAAAAAAAAAAAAAAAAAAAAAgBAQFYFhUWqygn
+	KOEvLi/9KCco4RYVFqsBAQFYAAAACAAAAAAAAAAAAAAAAP///wAAAAAAAAAAAAAAAAgG
+	AwZ8Pj0+8peYl//S0tP/4+Tl/9LS0/+XmJf/Pj0+8gYDBnwAAAAIAAAAAAAAAAD///8A
+	AAAAAAAAAAUDAQJlLTEt9HqRff+40Ln/1efT/9jo1f/V59P/uNG5/3qRff8tMS30AwEC
+	ZQAAAAUAAAAA////AAAAAAAAAAAmEBYQyz1tP/9Xm03/eLJX/4e6YP+HuWL/h7pg/3ix
+	V/9Wmk3/PWw//xAWEMsAAAAmAAAAAP///wAAAAAAAAAAThY8Gvc8jjD/TJwb/2CnHf9r
+	ryz/bLEv/2ywLP9iqR7/TJ4b/zyQMP8WPBr3AAAATQAAAAD///8AAAAAAQAIAGgeYRv/
+	VaUq/2WvIP91uzb/gsZI/4bIS/+DyEj/d743/2exIP9WqSr/HmIb/wAIAGcAAAAB////
+	AAAAAAgADABsJ3MY/3C6Nv9/xz3/kNNT/57dYv+i32f/n99k/5HWVP+AyD3/cr02/yd0
+	GP8ADQBsAAAACf///wAAAAAMAAYAYydqEPB/yD7/lNhW/6PlZv+x8Xb/uPd8/7P0eP+k
+	6Gf/ldpX/4DLQP8maxDvAAYAYwAAAAv///8AAAAADwAAAE4XRwXLd8Y5/6foa/+393v/
+	wv6F/8r/i//F/4b/uPt8/6rubP95yTr/F0kFygAAAEwAAAAN////AAAAAAwAAAAyAAwA
+	jEB6GOyh7Vz/yP+J/9X/mP/b/5//2P+b/83/i/+m9F3/Qn4X7AEMAIsAAAAzAAAADP//
+	/wAAAAAFAAAAIAAAAF4GFQCpTIQc6ZbZU/zC+3n/2P+L/8T6fP+a21b8UIkd6AYXAKkA
+	AABcAAAAIAAAAAX///8AAAAAAQAAAA0AAAAzAAAAZwAFAKIaMwTHQGIZ2FV5JuFAYhnZ
+	GzQEyAAFAKAAAABnAAAAMgAAAA0AAAAB////AAAAAAAAAAADAAAAEQAAADQAAABdAAAA
+	ewAAAI8AAACWAAAAjwAAAHsAAABcAAAAMwAAABEAAAADAAAAAP///wAAAAAAAAAAAAAA
+	AAMAAAAOAAAAIQAAADYAAABGAAAATAAAAEcAAAA2AAAAIQAAAA0AAAAEAAAAAAAAAAD/
+	//8AAAAAAAAAAAAAAAAAAAAAAQAAAAUAAAALAAAAEAAAABMAAAASAAAADAAAAAUAAAAB
+	AAAAAAAAAAAAAAAAABABAAADAAAAAQAQAAABAQADAAAAAQAQAAABAgADAAAABAAABM4B
+	AwADAAAAAQABAAABBgADAAAAAQACAAABCgADAAAAAQABAAABEQAEAAAAAQAAAAgBEgAD
+	AAAAAQABAAABFQADAAAAAQAEAAABFgADAAAAAQAQAAABFwAEAAAAAQAABAABHAADAAAA
+	AQABAAABKAADAAAAAQACAAABUgADAAAAAQACAAABUwADAAAABAAABNaHcwAHAAACqAAA
+	BN4AAAAAAAgACAAIAAgAAQABAAEAAQAAAqhhcHBsAhAAAG1udHJSR0IgWFlaIAfjAAoA
+	DwAAAAAAAGFjc3BBUFBMAAAAAEFQUEwAAAAAAAAAAAAAAAAAAAAAAAD21gABAAAAANMt
+	YXBwbAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+	DGRlc2MAAAEUAAAAdGNwcnQAAAGIAAAAI3d0cHQAAAGsAAAAFHJYWVoAAAHAAAAAFGdY
+	WVoAAAHUAAAAFGJYWVoAAAHoAAAAFHJUUkMAAAH8AAAADnZjZ3QAAAIMAAAAMG5kaW4A
+	AAI8AAAAPmNoYWQAAAJ8AAAALGJUUkMAAAH8AAAADmdUUkMAAAH8AAAADmRlc2MAAAAA
+	AAAAGkNhbGlicmF0ZWQgUkdCIENvbG9yc3BhY2UAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+	AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+	AAAAAAAAdGV4dAAAAABDb3B5cmlnaHQgQXBwbGUgSW5jLiwgMjAxOQAAWFlaIAAAAAAA
+	APNRAAEAAAABFsxYWVogAAAAAAAAb6AAADj1AAADkFhZWiAAAAAAAABilwAAt4cAABjZ
+	WFlaIAAAAAAAACSfAAAPhAAAtsNjdXJ2AAAAAAAAAAEBzQAAdmNndAAAAAAAAAABAAEA
+	AAAAAAAAAQAAAAEAAAAAAAAAAQAAAAEAAAAAAAAAAQAAbmRpbgAAAAAAAAA2AACj1wAA
+	VHsAAEzNAACZmgAAJmYAAA9cAABQDQAAVDkAAczOAAHMzgABzM4AAAAAAAAAAHNmMzIA
+	AAAAAAEMQgAABd7///MmAAAHkwAA/ZD///ui///9owAAA9wAAMBu
+	</data>
+	<key>TextColor</key>
+	<data>
+	BAtzdHJlYW10eXBlZIHoA4QBQISEhAdOU0NvbG9yAISECE5TT2JqZWN0AIWEAWMBhARm
+	ZmZmAYNS/n8/g27/fz+D1XQ/P4Y=
+	</data>
+	<key>TextStrikethrough</key>
+	<integer>0</integer>
+	<key>TextUnderline</key>
+	<integer>0</integer>
+</dict>
+</plist>
