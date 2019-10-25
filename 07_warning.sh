@@ -13,9 +13,9 @@ pickup_data() { echo "$1" | grep -m1 $2 | tr '{|}' '\n' | perl -pe 's/,"/\n/g' |
 pickup_multi_words() { echo "$1" | grep $2 | awk -F'content:' '{print $2}'; }
 
 # 元データ取得
-USER_AGENT='User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X)'
-WEATHER_DATA=$(curl -H "$USER_AGENT" --silent $WEATHER_URL)
+USER_AGENT='Mozilla/5.0 (Macintosh; Intel Mac OS X)'
+WEATHER_DATA=$(curl -A "$USER_AGENT" --silent $WEATHER_URL)
 DATA_WN=$(pickup_data "$WEATHER_DATA" 'banners')
 
 # Warningを取得して表示
-echo "\033[0;${C_COLOR}m"$(pickup_multi_words "$DATA_WN" 'content')"\033[0m"
+pickup_multi_words "$DATA_WN" 'content' | sed -E 's/^/'$(printf "\033[0;${C_COLOR}m")'/' | sed -E 's/$/'$(printf "\033[0m")'/'
