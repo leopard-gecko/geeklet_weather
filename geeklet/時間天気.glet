@@ -80,8 +80,8 @@ DATA_LOCALE=$(pickup_data "$WEATHER_DATA0" 'pageLocale')
 _IFS="$IFS";IFS="
 "
 CURRENT_TIME=($(pickup_array_word "$DATA_HOUR" 'localTime')) 
-CURRENT_TEMP=($(pickup_array_word "$DATA_HOUR" 'temp' | sed -e 's/[^0-9]//g'))
-#CURRENT_TEMP=($(pickup_array_word "$DATA_HOUR" 'temp' | sed -e 's/[^0-9]//g' | sed -E 's/$/℃/'))  # 等倍表示可能な日本語フォントで使用可能
+CURRENT_TEMP=($(pickup_array_word "$DATA_HOUR" 'temp' | sed -e 's/°//g'))
+#CURRENT_TEMP=($(pickup_array_word "$DATA_HOUR" 'temp' | sed -e 's/°/℃/'))  # 等倍表示可能な日本語フォントで使用可能
 CURRENT_PRECIP=($(pickup_array_word "$DATA_HOUR" 'precip')) 
 CURRENT_RAIN=($(pickup_array_word "$DATA_HOUR" 'rain')) 
 CURRENT_WIND=($(pickup_array_word "$DATA_HOUR" 'wind')) 
