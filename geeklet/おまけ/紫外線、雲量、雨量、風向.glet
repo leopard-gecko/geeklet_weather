@@ -98,7 +98,7 @@ echo "$DATA_DATE" | grep ''$(echo $cc$wi$pr)'' | sed "s/$/    /g" | tr '\n' "$(e
 	<key>FontSize</key>
 	<real>14</real>
 	<key>GeekletFrame</key>
-	<string>{{245, 250}, {724, 30}}</string>
+	<string>{{245, 220}, {724, 30}}</string>
 	<key>HasShadow</key>
 	<false/>
 	<key>Identifier</key>

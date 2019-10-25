@@ -65,11 +65,11 @@ pickup_data "$WEATHER_DATA" 'currentLocation' | grep localizedName | awk -F: '{p
 	AAAAAAEMQgAABd7///MmAAAHkwAA/ZD///ui///9owAAA9wAAMBu
 	</data>
 	<key>FontFamily</key>
-	<string>HelveticaNeue-Thin</string>
+	<string>HelveticaNeue-UltraLight</string>
 	<key>FontSize</key>
-	<real>18</real>
+	<real>24</real>
 	<key>GeekletFrame</key>
-	<string>{{245, 90}, {201, 30}}</string>
+	<string>{{248, 90}, {201, 30}}</string>
 	<key>HasShadow</key>
 	<false/>
 	<key>Identifier</key>
