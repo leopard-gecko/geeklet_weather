@@ -5,23 +5,27 @@
 # 場所のURL （日本語表記にしたい場合は/en/を/ja/に書き換える）
 WEATHER_URL=${WEATHER_URL:='https://www.accuweather.com/en/jp/koto-ku/221230/weather-forecast/221230'}
 
+# 週末だけ表示？(0 週間表示、1 週末のみ表示)
+WEEKEND=1
 # 何日間？
 NUM_L=7
 # 何日後から？
 AFTER=1
-# 週末だけ表示？(0 週間表示、1 週末のみ表示)
-WEEKEND=1
 # 日付を表示する？（0 表示しない、1 表示する）
 DATE_B=0
 # 曜日を表示する？（0 表示しない、1 簡略表示、2 詳細表示）
 DOW=2
+# 温度・降水確率を表示する？（0 表示しない、1 表示する）
+TEMP_PRECIP=1
 # 天気の詳細（0 表示しない、1 簡略表示、2 詳細表示）
 DETAIL=1
-# 天気アイコンを取得する？（1 取得する、0 取得しない）
-ICON_B=1
+# 各段の間の改行数
+NLF=1
 # 土曜日と日曜日の色 （30 黒、31 赤、32 緑、33 黄、34 青、35 マゼンタ、36 シアン、37 白、0 デフォルト）
 SAT_COLOR=44
 SUN_COLOR=41
+# 天気アイコンを取得する？（0 取得しない、1 取得する）
+ICON_B=1
 
 # 設定
 if
@@ -56,9 +60,9 @@ do
   LO[$i]=$(pickup_d_n_word "${DATA_WEEK[$i]}" 'night:' 'dTemp')
   [ $DATE_B -eq 1 ] && printf "%5s\t" "$(pickup_word "${DATA_WEEK[$i]}" 'date:')"
   [[ $DOW =~ 1|2 ]] && printf "$(pickup_word "${DATA_WEEK[$i]}" $MYDOW | sed -E s/$LOCALE_SAT/$(printf "\033[0;${SAT_COLOR}m")\&/ | sed -E s/$LOCALE_SUN/$(printf "\033[0;${SUN_COLOR}m")\&/ | sed -E 's/$/'$(printf "\033[0m")'/')\n"
-  printf "%-5s/%-5s\t☂️ :%4s\n" ${HI[$i]} ${LO[$i]} $(pickup_word "${DATA_WEEK[$i]}" 'precip')
+  [ $TEMP_PRECIP -eq 1 ] && printf "%-5s/%-5s\t☂️ :%4s\n" ${HI[$i]} ${LO[$i]} $(pickup_word "${DATA_WEEK[$i]}" 'precip')
   [[ $DETAIL =~ 1|2 ]] && pickup_word "${DATA_WEEK[$i]}" "$PHRASE"
-  echo
+  for (( m=0; m < $NLF; ++m)); do echo; done
 done
 
 # 天気アイコンのナンバーを取得して画像を保存（取得するアイコンのナンバーはゼロパディングする）
