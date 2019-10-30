@@ -17,12 +17,9 @@ DATA_CUR=$(pickup_data "$WEATHER_DATA" 'curCon')
 # 現在の温度と天気を取得して表示
 echo $(pickup_word "$DATA_CUR" 'temp') $(pickup_word "$DATA_CUR" 'phrase')
 
-# 天気アイコンのナンバーを取得し二桁でゼロパディングする
+# 天気アイコンのナンバーを取得し画像を保存
 ICON_CUR=$(printf "%02d" $(pickup_word "$DATA_CUR" 'icon'))
-
-# 天気アイコンナンバーをURLに変換して画像を保存
 echo "https://vortex.accuweather.com/adc2010/images/icons-numbered/"$ICON_CUR"-xl.png" | xargs curl --silent -o /tmp/weather_now.png
-
 # シンプルなデザインの天気アイコンを使いたい場合はこれに書き換える
 # https://vortex.accuweather.com/adc2010/images/slate/icons/"$ICON_CUR"-xl.png
 
