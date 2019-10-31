@@ -6,7 +6,7 @@
 WEATHER_URL=${WEATHER_URL:='https://www.accuweather.com/en/jp/koto-ku/221230/weather-forecast/221230'}
 
 # 120分間天気に変化がない時のMINUTECASTの表示（0 変化がなければ表示しない、1 常に表示する）
-MC_SHOW=0
+F_ALWAYS=0
 
 # データ整理用関数
 pickup_data() { echo "$1" | grep -m1 $2 | tr '{|}' '\n' | perl -pe 's/,"/\n/g' | tr -d '"'; }
@@ -18,6 +18,6 @@ WEATHER_DATA=$(curl -A "$USER_AGENT" --silent $WEATHER_URL)
 DATA_MC=$(pickup_data "$WEATHER_DATA" 'minuteCastSummary')
 
 # MINUTECASTを取得して表示
-if [ $(pickup_word "$DATA_MC" 'typeId') -ne 0 ] || [ $MC_SHOW -eq 1 ];then
+if [ $(pickup_word "$DATA_MC" 'typeId') -ne 0 ] || [ $F_ALWAYS -eq 1 ];then
 pickup_word "$DATA_MC" 'phrase'
 fi

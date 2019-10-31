@@ -6,7 +6,7 @@
 WEATHER_URL=${WEATHER_URL:='https://www.accuweather.com/ja/jp/koto-ku/221230/weather-forecast/221230'}
 
 # 見出しの色 （30 黒、31 赤、32 緑、33 黄、34 青、35 マゼンタ、36 シアン、37 白、0 デフォルト）
-C_COLOR='41;37'
+COLOR_CP='41;37'
 
 # データ整理用関数
 pickup_data() { echo "$1" | grep -m1 $2 | tr '{|}' '\n' | perl -pe 's/,"/\n/g' | tr -d '"'; }
@@ -18,4 +18,4 @@ WEATHER_DATA=$(curl -A "$USER_AGENT" --silent $WEATHER_URL)
 DATA_WN=$(pickup_data "$WEATHER_DATA" 'banners')
 
 # Warningを取得して表示
-pickup_multi_words "$DATA_WN" 'content' | sed -E 's/^/'$(printf "\033[0;${C_COLOR}m")'/' | sed -E 's/$/'$(printf "\033[0m")'/'
+pickup_multi_words "$DATA_WN" 'content' | sed -E 's/^/'$(printf "\033[0;${COLOR_CP}m")'/' | sed -E 's/$/'$(printf "\033[0m")'/'

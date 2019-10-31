@@ -141,7 +141,7 @@ EOT
 	<key>FontSize</key>
 	<real>80</real>
 	<key>GeekletFrame</key>
-	<string>{{245.33984375, 120}, {948, 97}}</string>
+	<string>{{245, 120}, {948, 97}}</string>
 	<key>HasShadow</key>
 	<false/>
 	<key>Identifier</key>
