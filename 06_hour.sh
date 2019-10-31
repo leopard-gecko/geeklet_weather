@@ -7,7 +7,7 @@
 WEATHER_URL=${WEATHER_URL:='https://www.accuweather.com/en/jp/koto-ku/221230/weather-forecast/221230'}
 
 # 何時間分？
-MY_HOUR=24
+NUM_HOUR=24
 # 何時間おき？
 SKIP=2
 # 何段？
@@ -68,7 +68,7 @@ display_data() {
 USER_AGENT='Mozilla/5.0 (Macintosh; Intel Mac OS X)'
 WEATHER_DATA0=$(curl -A "$USER_AGENT" --silent ${WEATHER_URL/weather-forecast/hourly-weather-forecast})
 WEATHER_DATA1=$(curl -A "$USER_AGENT" --silent ${WEATHER_URL/weather-forecast/hourly-weather-forecast}"?day=2")
-DATA_HOUR=$(echo "$WEATHER_DATA0" "$WEATHER_DATA1"| grep 'hourlyForecast' | perl -pe "s/},{/\n/g" | tr '[|]' '\n' | grep 'extended' | tr -d '{|}' | sed -n 1,$(echo $MY_HOUR)p)
+DATA_HOUR=$(echo "$WEATHER_DATA0" "$WEATHER_DATA1"| grep 'hourlyForecast' | perl -pe "s/},{/\n/g" | tr '[|]' '\n' | grep 'extended' | tr -d '{|}' | sed -n 1,$(echo $NUM_HOUR)p)
 DATA_LOCALE=$(pickup_data "$WEATHER_DATA0" 'pageLocale')
 
 # 指定した時間分の時刻・気温・降水確率・雨量・風速・天気を配列変数として取得
@@ -93,7 +93,7 @@ L_PM="PM|अपराह्|μ.μ.|오후|PTG|অপরাহ্ণ|ಅಪರಾ
 for (( l=0; l < $COLUM; ++l))
 do
   for (( m=0; m < $NLF; ++m)); do echo; done
-  [[ l -eq 0 ]] && nt=$(echo "scale=1; ($MY_HOUR+0.9)/$COLUM" | bc | awk '{printf("%d",$1 + 0.5)}') || nt=$(($MY_HOUR/$COLUM)) 
+  [[ l -eq 0 ]] && nt=$(echo "scale=1; ($NUM_HOUR+0.9)/$COLUM" | bc | awk '{printf("%d",$1 + 0.5)}') || nt=$(($NUM_HOUR/$COLUM)) 
   # 時刻を左揃えの指定した桁数で表示
   printf "%*s" $MY_INDEX " "
   for i in $(seq 0 $SKIP $(($nt-1)))
@@ -129,7 +129,7 @@ done
 
 # 天気アイコンを取得して保存
 if [ $F_ICON -eq 1 ]; then
-  for (( i=0; i < $(($MY_HOUR/$SKIP+1)); ++i))
+  for (( i=0; i < $(($NUM_HOUR/$SKIP+1)); ++i))
   do
     echo "https://vortex.accuweather.com/adc2010/images/slate/icons/${HOUR_ICON[$(($i*$SKIP))]}-m.png" | xargs curl --silent -o /tmp/weather_hour_$i.png
   done
