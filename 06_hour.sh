@@ -31,6 +31,11 @@ COLOR_AM='47;31'
 COLOR_PM='47;34'
 # 見出しの色
 COLOR_CP='0'
+# 日本語対応の等幅フォント？（1 対応【Osaka−等幅、Ricty、Myrica Mなど】、0 非対応【Andale Mono、Courier、Menlo、Monacoなど】）
+F_JFNT=1
+
+# 設定
+[ $F_JFNT -eq 1 ] && JFNT='℃' || JFNT='°'
 
 # 文字数取得用関数
 mystrln() {
@@ -73,13 +78,13 @@ WEATHER_DATA1=$(curl -A "$USER_AGENT" --silent ${WEATHER_URL/weather-forecast/ho
 # 指定した時間分の時刻・気温・降水確率・雨量・風速・天気を配列変数として取得
 
 LOCALE_TEMP=' '
-LOCALE_PRECIP=$(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -m2 -A1 '<div class="precip">' | grep -v '<div class="precip">' | tr -d '\t')
+LOCALE_PRECIP=$(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -m2 -A1 '<div class="precip">' | grep -v '<div class="precip">' | grep -v '\-\-' | tr -d '\t' | sed -E 's/$/:/')
 LOCALE_RAIN=$(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A6 '<div class="panel">' | sed -n 7p  | tr -d '\t')
 LOCALE_WIND=$(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A6 '<div class="panel left">' | sed -n 7p  | tr -d '\t')
 
 _IFS="$IFS";IFS=$'\n'
 HOUR_TIME=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A1 '<div class="date">' | grep '<p>' | sed -e 's/<p>//g' -e 's/<\/p>//g' | perl -C -MEncode -pe 's/&#x([0-9A-F]{4});/chr(hex($1))/ge'))
-HOUR_TEMP=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A1 '<div class="temp metric">' | grep -v '<div class="temp metric">' | cut -d\& -f1 | sed -E 's/$/℃/'))
+HOUR_TEMP=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A1 '<div class="temp metric">' | grep -v '<div class="temp metric">' | cut -d\& -f1 | sed -E s/$/$JFNT/))
 HOUR_PRECIP=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A2 '<div class="precip">' | grep \%))
 HOUR_RAIN=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A1 $LOCALE_RAIN | grep -v $LOCALE_RAIN))
 HOUR_WIND=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A1 $LOCALE_WIND | grep -v $LOCALE_WIND))
