@@ -59,12 +59,12 @@ pickup_array_word() { echo "$1" | awk -F"\"$2\":" '{print $2}' | cut -d"\"" -f2 
 
 # データ表示用関数
 display_data() {
-  mystr=$(echo "$1" | perl -C -MEncode -pe 's/&#x([0-9A-F]{4});/chr(hex($1))/ge')
+  mystr=$(echo "$1" | perl -C -MEncode -pe 's/&#x([0-9A-F]{2,4});/chr(hex($1))/ge')
   mystrln "$mystr" $MY_INDEX S1 S2
   printf "\033[0;${COLOR_CP}m%-*s\033[0m" $S2 "$S1"
   for i in $(seq 0 $SKIP $(($nt-1)))
   do
-    mystrln "$(eval echo '${'$2'[$(($i+$n))]}' | perl -C -MEncode -pe 's/&#x([0-9A-F]{4});/chr(hex($1))/ge')" $MY_STRLN S1 S2
+    mystrln "$(eval echo '${'$2'[$(($i+$n))]}' | perl -C -MEncode -pe 's/&#x([0-9A-F]{2,4});/chr(hex($1))/ge')" $MY_STRLN S1 S2
     printf "%-*s" $S2 "$S1"
   done
   echo
@@ -83,12 +83,12 @@ LOCALE_RAIN=$(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A6 '<div class="pan
 LOCALE_WIND=$(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A6 '<div class="panel left">' | sed -n 7p  | tr -d '\t')
 
 _IFS="$IFS";IFS=$'\n'
-HOUR_TIME=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A1 '<div class="date">' | grep '<p>' | sed -e 's/<p>//g' -e 's/<\/p>//g' | perl -C -MEncode -pe 's/&#x([0-9A-F]{4});/chr(hex($1))/ge'))
+HOUR_TIME=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A1 '<div class="date">' | grep '<p>' | sed -e 's/<p>//g' -e 's/<\/p>//g' | perl -C -MEncode -pe 's/&#x([0-9A-F]{2,4});/chr(hex($1))/ge'))
 HOUR_TEMP=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A1 '<div class="temp metric">' | grep -v '<div class="temp metric">' | grep -v '\-\-' | cut -d\& -f1 | sed -E s/$/$JFNT/))
 HOUR_PRECIP=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A2 '<div class="precip">' | grep \% | grep -v '\-\-'))
 HOUR_RAIN=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A1 $LOCALE_RAIN | grep -v $LOCALE_RAIN | grep -v '\-\-'))
 HOUR_WIND=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A1 $LOCALE_WIND | grep -v $LOCALE_WIND | grep -v '\-\-'))
-HOUR_PHRASE=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A1 '<span class="phrase">' | grep -v '<span class="phrase">' | grep -v '\-\-'))
+HOUR_PHRASE=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A1 '<span class="phrase">' | grep -v '<span class="phrase">' | grep -v '\-\-' | perl -C -MEncode -pe 's/&#x([0-9A-F]{2,4});/chr(hex($1))/ge'))
 IFS="$_IFS"
 
 # 指定した時間分の天気アイコンのナンバーをゼロパディングし配列変数として取得
