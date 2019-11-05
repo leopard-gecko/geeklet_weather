@@ -45,7 +45,7 @@ pickup_word() { echo "$1" | grep -m1 $2 | awk -F: '{print $2}'; }
 
 # 元データ取得（日曜日の場合は翌週の週末を取得する）
 USER_AGENT='Mozilla/5.0 (Macintosh; Intel Mac OS X)'
-WEATHER_DATA=$(curl -A "$USER_AGENT" --silent $WEATHER_URL)
+WEATHER_DATA=$(curl -A "$USER_AGENT" --silent ${WEATHER_URL/weather-forecast/daily-weather-forecast})
 for (( i = 0; i < $NUM_L; ++i ))
 do
   DATA_WEEK[$i]=$(pickup_day_data "$WEATHER_DATA" 'dailyForecast' $(date -v+$(($AFTER+$i))d '+%Y-%m-%d'))

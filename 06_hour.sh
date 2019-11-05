@@ -54,11 +54,12 @@ pickup_array_word() { echo "$1" | awk -F"\"$2\":" '{print $2}' | cut -d"\"" -f2 
 
 # データ表示用関数
 display_data() {
-  mystrln "$(pickup_word "$DATA_LOCALE" "$1"):" $MY_INDEX S1 S2
+  mystr=$(echo "$1" | perl -C -MEncode -pe 's/&#x([0-9A-F]{4});/chr(hex($1))/ge')
+  mystrln "$mystr" $MY_INDEX S1 S2
   printf "\033[0;${COLOR_CP}m%-*s\033[0m" $S2 "$S1"
   for i in $(seq 0 $SKIP $(($nt-1)))
   do
-    mystrln "$(eval echo '${'$2'[$(($i+$n))]}')" $MY_STRLN S1 S2
+    mystrln "$(eval echo '${'$2'[$(($i+$n))]}' | perl -C -MEncode -pe 's/&#x([0-9A-F]{4});/chr(hex($1))/ge')" $MY_STRLN S1 S2
     printf "%-*s" $S2 "$S1"
   done
   echo
@@ -68,22 +69,25 @@ display_data() {
 USER_AGENT='Mozilla/5.0 (Macintosh; Intel Mac OS X)'
 WEATHER_DATA0=$(curl -A "$USER_AGENT" --silent ${WEATHER_URL/weather-forecast/hourly-weather-forecast})
 WEATHER_DATA1=$(curl -A "$USER_AGENT" --silent ${WEATHER_URL/weather-forecast/hourly-weather-forecast}"?day=2")
-DATA_HOUR=$(echo "$WEATHER_DATA0" "$WEATHER_DATA1"| grep 'hourlyForecast' | perl -pe "s/},{/\n/g" | tr '[|]' '\n' | grep 'extended' | tr -d '{|}' | sed -n 1,$(echo $NUM_HOUR)p)
-DATA_LOCALE=$(pickup_data "$WEATHER_DATA0" 'pageLocale')
 
 # 指定した時間分の時刻・気温・降水確率・雨量・風速・天気を配列変数として取得
+
+LOCALE_TEMP=' '
+LOCALE_PRECIP=$(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -m2 -A1 '<div class="precip">' | grep -v '<div class="precip">' | tr -d '\t')
+LOCALE_RAIN=$(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A6 '<div class="panel">' | sed -n 7p  | tr -d '\t')
+LOCALE_WIND=$(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A6 '<div class="panel left">' | sed -n 7p  | tr -d '\t')
+
 _IFS="$IFS";IFS=$'\n'
-HOUR_TIME=($(pickup_array_word "$DATA_HOUR" 'localTime')) 
-HOUR_TEMP=($(pickup_array_word "$DATA_HOUR" 'temp' | sed -e 's/°//g'))
-#HOUR_TEMP=($(pickup_array_word "$DATA_HOUR" 'temp' | sed -e 's/°/℃/'))  # 等倍表示可能な日本語フォントで使用可能
-HOUR_PRECIP=($(pickup_array_word "$DATA_HOUR" 'precip')) 
-HOUR_RAIN=($(pickup_array_word "$DATA_HOUR" 'rain')) 
-HOUR_WIND=($(pickup_array_word "$DATA_HOUR" 'wind')) 
-HOUR_PHRASE=($(pickup_array_word "$DATA_HOUR" 'phrase')) 
+HOUR_TIME=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A1 '<div class="date">' | grep '<p>' | sed -e 's/<p>//g' -e 's/<\/p>//g' | perl -C -MEncode -pe 's/&#x([0-9A-F]{4});/chr(hex($1))/ge'))
+HOUR_TEMP=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A1 '<div class="temp metric">' | grep -v '<div class="temp metric">' | cut -d\& -f1 | sed -E 's/$/℃/'))
+HOUR_PRECIP=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A2 '<div class="precip">' | grep \%))
+HOUR_RAIN=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A1 $LOCALE_RAIN | grep -v $LOCALE_RAIN))
+HOUR_WIND=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A1 $LOCALE_WIND | grep -v $LOCALE_WIND))
+HOUR_PHRASE=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A1 '<span class="phrase">' | grep -v '<span class="phrase">'))
 IFS="$_IFS"
 
 # 指定した時間分の天気アイコンのナンバーをゼロパディングし配列変数として取得
-HOUR_ICON=($(echo "$DATA_HOUR" | awk -F'"icon":' '{print $2}' | cut -d"," -f1 | awk '{printf "%02d\n", $1}'))
+HOUR_ICON=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep 'img class="weather-icon icon"' | awk -F'/images/weathericons/' '{print $2}' | cut -d. -f1 | awk '{printf "%02d\n", $1}' ))
 
 # 時刻・天気を表示
 n=0
@@ -107,10 +111,10 @@ do
   done
   echo
   # 気温、降水確率、雨量、風向を左揃えの指定した桁数で表示
-  [ $F_TEMP -eq 1 ] && display_data 'temp' 'HOUR_TEMP'
-  [ $F_PRECIP -eq 1 ] && display_data 'precip' 'HOUR_PRECIP'
-  [ $F_RAIN -eq 1 ] && display_data 'rain' 'HOUR_RAIN'
-  [ $F_WIND -eq 1 ] && display_data 'wind' 'HOUR_WIND'
+  [ $F_TEMP -eq 1 ] && display_data "$LOCALE_TEMP" 'HOUR_TEMP'
+  [ $F_PRECIP -eq 1 ] && display_data "$LOCALE_PRECIP" 'HOUR_PRECIP'
+  [ $F_RAIN -eq 1 ] && display_data "$LOCALE_RAIN" 'HOUR_RAIN'
+  [ $F_WIND -eq 1 ] && display_data "$LOCALE_WIND" 'HOUR_WIND'
   # 天気を左揃えの指定した桁数かつ4段で表示
   if [ $F_PHRASE -eq 1 ]; then
     for (( k=1; k < 5; ++k))
