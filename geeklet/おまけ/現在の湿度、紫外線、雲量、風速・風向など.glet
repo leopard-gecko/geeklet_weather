@@ -17,7 +17,7 @@ F_DISP[2]=1  #雲量（Cloud Cover）
 F_DISP[3]=1  #気圧（Pressure）
 F_DISP[4]=0  #露点（Dew Point）
 F_DISP[5]=0  #視界（Visibility）
-F_DISP[6]=0  #RealFeel®の変化（RealFeel® Shade）
+F_DISP[6]=1  #RealFeel®の変化（RealFeel® Shade）
 
 # 改行表示（0 改行しない、1 改行する）
 LINE_FEED=0
@@ -29,7 +29,7 @@ if [ $LINE_FEED -eq 1 ]; then lf='\n'; else lf='    '; fi
 USER_AGENT='User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X)'
 WEATHER_DATA=$(curl -H "$USER_AGENT" --silent ${WEATHER_URL/weather-forecast/current-weather})
 _IFS="$IFS";IFS=$'\n'
-DATA_CUR=($(echo "$WEATHER_DATA" | awk '/&lt;div class=\"accordion-item-content accordion-item-content\"&gt;/,/&lt;div class=\"short-list\"&gt;/' | grep -A1 '&lt;p&gt;' | grep -v '&lt;p&gt;' | grep -v '\-\-' | tr -d '\t' | perl -C -MEncode -pe 's/&amp;#x([0-9A-F]{2,4});/chr(hex($1))/ge'))
+DATA_CUR=($(echo "$WEATHER_DATA" | awk '/&lt;div class=\"accordion-item-content accordion-item-content\"&gt;/,/&lt;div class=\"short-list\"&gt;/' | grep -A1 '&lt;p&gt;' | grep -v '&lt;p&gt;' | grep -v '\-\-' | tr -d '\t' | ruby -pe 'gsub(/&amp;#(?:(\d*?)|(?:[xX]([0-9a-fA-F]{2,4})));/) { [$1.nil? ? $2.to_i(16) : $1.to_i].pack("U") }'))
 IFS="$_IFS"
 
 for (( i=0; i &lt; $((${#DATA_CUR[@]}+1)); ++i))
@@ -38,6 +38,8 @@ do
 done</string>
 	<key>DisplayID</key>
 	<integer>1892209665</integer>
+	<key>DisplayStatusImage</key>
+	<false/>
 	<key>DropShadow</key>
 	<false/>
 	<key>FailureImage</key>
@@ -86,7 +88,7 @@ done</string>
 	<key>FontSize</key>
 	<real>14</real>
 	<key>GeekletFrame</key>
-	<string>{{250, 215}, {810, 30}}</string>
+	<string>{{250, 215}, {1027.38671875, 45}}</string>
 	<key>HasShadow</key>
 	<false/>
 	<key>Identifier</key>
@@ -96,7 +98,9 @@ done</string>
 	<key>RefreshInterval</key>
 	<integer>180</integer>
 	<key>SetLocale</key>
-	<true/>
+	<false/>
+	<key>StatusImagePosition</key>
+	<integer>9</integer>
 	<key>SuccessImage</key>
 	<data>
 	TU0AKgAABAj///8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAANAAAAGgAAACAAAAAaAAAA
@@ -147,5 +151,7 @@ done</string>
 	<integer>0</integer>
 	<key>TextUnderline</key>
 	<integer>0</integer>
+	<key>Timeout</key>
+	<integer>180</integer>
 </dict>
 </plist>

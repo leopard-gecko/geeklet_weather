@@ -19,14 +19,14 @@ MY_STRLN=15
 # 見出しの文字数
 MY_INDEX=9
 # 気温、降水確率、雨量、風速、フレーズを表示する？（1 表示する、0 表示しない）
-F_TEMP=1
-F_PRECIP=1
-F_RAIN=1
-F_WIND=1
-F_PHRASE=0
+F_TEMP=1    # 気温
+F_PRECIP=1  # 降水確率
+F_RAIN=1    # 雨量
+F_WIND=1    # 風速
+F_PHRASE=0  # 天気のフレーズ
 # 天気アイコンを取得する？（1 取得する、0 取得しない）
 F_ICON=1
-# AMとPMの色  30 黒、31 赤、32 緑、33 黄、34 青、35 マゼンタ、36 シアン、37 白、0 デフォルト
+# AMとPMの色  30 黒、31 赤、32 緑、33 黄、34 青、35 マゼンタ、36 シアン、37 白、0 デフォルト、10の位を4にすれば背景の色設定
 COLOR_AM='47;31'
 COLOR_PM='47;34'
 # 見出しの色
@@ -89,7 +89,7 @@ HOUR_WIND=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A1 $LOCALE_WIND | gr
 HOUR_PHRASE=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A1 '<span class="phrase">' | grep -v '<span class="phrase">' | grep -v '\-\-'))
 IFS="$_IFS"
 
-# 天気アイコンのナンバーをゼロパディングし配列変数として取得
+# 指定した時間分の天気アイコンのナンバーをゼロパディングし配列変数として取得
 HOUR_ICON=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep 'img class="weather-icon icon"' | awk -F'/images/weathericons/' '{print $2}' | cut -d. -f1 | awk '{printf "%02d\n", $1}' ))
 
 # 時刻・天気を表示
