@@ -12,12 +12,12 @@ AFTER=1
 # 週末だけ表示？(0 週間表示、1 週末のみ表示)
 F_WEEKEND=1
 # 日付を表示する？（0 表示しない、1 表示する）
-F_DATE=0
-# 曜日を表示する？（0 表示しない、1 簡略表示、2 詳細表示）
-F_DOW=2
+F_DATE=1
+# 曜日を表示する？（0 表示しない、1 表示する）
+F_DOW=1
 # 温度・降水確率を表示する？（0 表示しない、1 表示する）
 F_TEMP_PRECIP=1
-# 天気の詳細（0 表示しない、1 簡略表示、2 詳細表示）
+# 天気の詳細（0 表示しない、1 表示する）
 F_PHRASE=1
 # 各段の間の改行数
 NLF=1
@@ -33,35 +33,26 @@ if
 NUM_L=2
 AFTER=$(expr 6 - $(date +%w))
 fi
-[ $F_DOW -eq 1 ] && MY_DOW='dow:'
-[ $F_DOW -eq 2 ] && MY_DOW='lDOW:'
-[ $F_PHRASE -eq 1 ] && MY_PHRASE='phrase'
-[ $F_PHRASE -eq 2 ] && MY_PHRASE='longPhrase'
-
-# データ整理用関数
-pickup_day_data() { echo "$1" | grep -m1 $2 | tr '{|}' '\n' | grep -A3 $3 | perl -pe 's/,"/\n/g' | tr -d '"'; }
-pickup_d_n_word() { echo "$1" | grep -A7 $2 | grep -m1 $3 | awk -F: '{print $2}'; }
-pickup_word() { echo "$1" | grep -m1 $2 | awk -F: '{print $2}'; }
 
 # 元データ取得（日曜日の場合は翌週の週末を取得する）
 USER_AGENT='Mozilla/5.0 (Macintosh; Intel Mac OS X)'
 WEATHER_DATA=$(curl -A "$USER_AGENT" --silent ${WEATHER_URL/weather-forecast/daily-weather-forecast})
-for (( i = 0; i < $NUM_L; ++i ))
-do
-  DATA_WEEK[$i]=$(pickup_day_data "$WEATHER_DATA" 'dailyForecast' $(date -v+$(($AFTER+$i))d '+%Y-%m-%d'))
-done
-LOCALE_SAT=$(pickup_day_data "$WEATHER_DATA" 'dailyForecast' $(date -v+$(expr 6 - $(date +%w))d +%Y-%m-%d) | grep $MY_DOW | awk -F: '{print $2}')
-LOCALE_SUN=$(pickup_day_data "$WEATHER_DATA" 'dailyForecast' $(date -v+$(expr 7 - $(date +%w))d +%Y-%m-%d) | grep $MY_DOW | awk -F: '{print $2}')
+DATA_WEEK_RAW=$(echo "$WEATHER_DATA" | grep -A27 'forecast-list-card forecast-card' | ruby -pe 'gsub(/&#[xX]([0-9a-fA-F]+);/) { [$1.to_i(16)].pack("U") }')
+_IFS="$IFS";IFS='^'
+DATA_WEEK=($(echo "$DATA_WEEK_RAW" | sed s/--/^/g))
+IFS="$_IFS"
+LOCALE_SAT=$(echo "$DATA_WEEK_RAW" | grep -A5 '<p class="dow">' | grep -B3 $(date -v+$(expr 6 - $(date +%w))d +%m/%d) | sed -n '1p' | tr -d '\t')
+LOCALE_SUN=$(echo "$DATA_WEEK_RAW" | grep -A5 '<p class="dow">' | grep -B3 $(date -v+$(expr 7 - $(date +%w))d +%m/%d) | sed -n '1p' | tr -d '\t')
 
 # 日付、曜日、最高・最低気温、降水確率、天気を表示
 for (( i = 0; i < $NUM_L; ++i ))
 do
-  HI[$i]=$(pickup_d_n_word "${DATA_WEEK[$i]}" 'day:' 'dTemp')
-  LO[$i]=$(pickup_d_n_word "${DATA_WEEK[$i]}" 'night:' 'dTemp')
-  [ $F_DATE -eq 1 ] && printf "%5s\t" "$(pickup_word "${DATA_WEEK[$i]}" 'date:')"
-  [[ $F_DOW =~ 1|2 ]] && printf "$(pickup_word "${DATA_WEEK[$i]}" $MY_DOW | sed -E s/$LOCALE_SAT/$(printf "\033[0;${COLOR_SAT}m")\&/ | sed -E s/$LOCALE_SUN/$(printf "\033[0;${COLOR_SUN}m")\&/ | sed -E 's/$/'$(printf "\033[0m")'/')\n"
-  [ $F_TEMP_PRECIP -eq 1 ] && printf "%-5s/%-5s\t☂️ :%4s\n" ${HI[$i]} ${LO[$i]} $(pickup_word "${DATA_WEEK[$i]}" 'precip')
-  [[ $F_PHRASE =~ 1|2 ]] && pickup_word "${DATA_WEEK[$i]}" "$MY_PHRASE"
+  HI[$i]=$(echo "${DATA_WEEK[$(expr $i + $AFTER)]}" | grep '<span class="high">' | sed -e 's/<[^>]*>//g' | tr -d '\t')
+  LO[$i]=$(echo "${DATA_WEEK[$(expr $i + $AFTER)]}" | grep '<span class="low">' | sed -e 's/<[^>]*>//g' | tr -d '\t')
+  [ $F_DATE -eq 1 ] && printf "%5s\t" "$(echo "${DATA_WEEK[$(expr $i + $AFTER)]}" | grep -A1 '<p class="sub">' | grep -v '<p class="sub">' | tr -d '\t')"
+  [ $F_DOW -eq 1 ] && echo "${DATA_WEEK[$(expr $i + $AFTER)]}" | grep -A1 '<p class="dow">' | grep -v '<p class="dow">' | tr -d '\t' | sed -E s/$LOCALE_SAT/$(printf "\033[0;${COLOR_SAT}m")\&/ | sed -E s/$LOCALE_SUN/$(printf "\033[0;${COLOR_SUN}m")\&/ | sed -E 's/$/'$(printf "\033[0m")'/'
+  [ $F_TEMP_PRECIP -eq 1 ] && printf "%-5s%-6s\t☂️ :%4s\n" ${HI[$i]} "${LO[$i]}" $(echo "${DATA_WEEK[$(expr $i + $AFTER)]}" | grep -A4 '<div class="info precip">' | sed -n '5p' | sed -e 's/<[^>]*>//g' | tr -d '\t')
+  [ $F_PHRASE -eq 1 ] && echo "${DATA_WEEK[$(expr $i + $AFTER)]}" | grep -A1 '<span class="phrase">' | grep -v '<span class="phrase">' | tr -d '\t'
   for (( m=0; m < $NLF; ++m)); do echo; done
 done
 
@@ -69,7 +60,7 @@ done
 if [ $F_ICON -eq 1 ]; then
   for (( i = 0; i < $NUM_L; ++i ))
   do
-  ICON_WEEK[$i]=$(printf "%02d" $(pickup_word "${DATA_WEEK[$i]}" 'icon'))
+  ICON_WEEK[$i]=$(printf "%02d" $(echo "${DATA_WEEK[$(expr $i + $AFTER)]}" | grep 'img class="weather-icon icon "' | awk -F'weathericons/' '{print $2}' | cut -f 1 -d "." ))
   echo "https://vortex.accuweather.com/adc2010/images/slate/icons/"${ICON_WEEK[$i]}"-l.png" | xargs curl --silent -o /tmp/weather_week_$(($i)).png
   done
 fi
