@@ -41,8 +41,8 @@ DATA_WEEK_RAW=$(echo "$WEATHER_DATA" | grep -A27 'forecast-list-card forecast-ca
 _IFS="$IFS";IFS='^'
 DATA_WEEK=($(echo "$DATA_WEEK_RAW" | sed s/--/^/g))
 IFS="$_IFS"
-LOCALE_SAT=$(echo "$DATA_WEEK_RAW" | grep -A5 '<p class="dow">' | grep -B3 $(date -v+$(expr 6 - $(date +%w))d +%m/%d) | sed -n '1p')
-LOCALE_SUN=$(echo "$DATA_WEEK_RAW" | grep -A5 '<p class="dow">' | grep -B3 $(date -v+$(expr 7 - $(date +%w))d +%m/%d) | sed -n '1p')
+LOCALE_SAT=$(echo "$DATA_WEEK_RAW" | grep -A4 "?day=$(expr 6 - $(date +%w) + 1)\"" | sed -n '5p')
+LOCALE_SUN=$(echo "$DATA_WEEK_RAW" | grep -A4 "?day=$(expr 7 - $(date +%w) + 1)\"" | sed -n '5p')
 
 # 日付、曜日、最高・最低気温、降水確率、天気を表示
 for (( i = 0; i < $NUM_L; ++i ))
