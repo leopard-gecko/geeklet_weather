@@ -24,6 +24,8 @@ NLF=1
 # 土曜日と日曜日の色 （30 黒、31 赤、32 緑、33 黄、34 青、35 マゼンタ、36 シアン、37 白、0 デフォルト）
 COLOR_SAT=44
 COLOR_SUN=41
+# 日付の色
+COLOR_DATE=40;37
 # 天気アイコンを取得する？（0 取得しない、1 取得する）
 F_ICON=1
 
@@ -53,7 +55,7 @@ do
   DOW[$i]=$(echo "${DATA_WEEK[$(expr $i + $AFTER)]}" | grep -A1 '<p class="dow">' | grep -v '<p class="dow">' | sed -E s/$LOCALE_SAT/$(printf "\033[0;${COLOR_SAT}m")\&/ | sed -E s/$LOCALE_SUN/$(printf "\033[0;${COLOR_SUN}m")\&/ | sed -E 's/$/'$(printf "\033[0m")'/')
   PRECIP[$i]=$(echo "${DATA_WEEK[$(expr $i + $AFTER)]}" | grep -A4 '<div class="info precip">' | sed -n '5p' | sed -e 's/<[^>]*>//g')
   PHRASE[$i]=$(echo "${DATA_WEEK[$(expr $i + $AFTER)]}" | grep -A1 '<span class="phrase">' | grep -v '<span class="phrase">')
-  [ $F_DATE -eq 1 ] && printf "%5s\t" "${DATE[$i]}"
+  [ $F_DATE -eq 1 ] && printf "\033[0;${COLOR_DATE}m%5s\033[0m\t" "${DATE[$i]}"
   [ $F_DOW -eq 1 ] && echo ${DOW[$i]}
   [ $F_TEMP_PRECIP -eq 1 ] && printf "%-5s%-6s\t☂️ :%4s\n" ${HI[$i]} "${LO[$i]}" ${PRECIP[$i]}
   [ $F_PHRASE -eq 1 ] && echo ${PHRASE[$i]}

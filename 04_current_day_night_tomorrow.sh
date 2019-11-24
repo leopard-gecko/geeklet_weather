@@ -59,7 +59,7 @@ if [ $FLG_C -eq 1 ]; then
 fi
 if [ $FLG_D -eq 1 ]; then
   printf "\033[0;${COLOR_CP}m%s\033[0m\n" $(pickup_word "$DATA_LOCALE" 'today:')
-  [ $TEMP_PRECIP -eq 1 ] && printf "%-5s %-5s \t☂️: %4s\n" $HI_TODAY $(pickup_word "$DATA_LOCALE" 'high:') $(pickup_d_n_word "$DATA_TODAY" 'day:' 'precip')
+  [ $TEMP_PRECIP -eq 1 ] && printf "%-5s %-5s \t☂️ : %4s\n" $HI_TODAY $(pickup_word "$DATA_LOCALE" 'high:') $(pickup_d_n_word "$DATA_TODAY" 'day:' 'precip')
   [[ $DETAIL =~ 1|2 ]] && pickup_d_n_word "$DATA_TODAY" 'day:' "$PHRASE"
   for (( m=0; m < $NLF; ++m)); do echo; done
   if [ $F_ICON -eq 1 ]; then
@@ -69,7 +69,7 @@ if [ $FLG_D -eq 1 ]; then
 fi
 if [ $FLG_N -eq 1 ]; then
   printf "\033[0;${COLOR_CP}m%s\033[0m\n" $(pickup_word "$DATA_LOCALE" 'tonight:')
-  [ $TEMP_PRECIP -eq 1 ] && printf "%-5s %-5s \t☂️: %4s\n" $LO_TODAY $(pickup_word "$DATA_LOCALE" 'low:') $(pickup_d_n_word "$DATA_TODAY" 'night:' 'precip')
+  [ $TEMP_PRECIP -eq 1 ] && printf "%-5s %-5s \t☂️ : %4s\n" $LO_TODAY $(pickup_word "$DATA_LOCALE" 'low:') $(pickup_d_n_word "$DATA_TODAY" 'night:' 'precip')
   [[ $DETAIL =~ 1|2 ]] && pickup_d_n_word "$DATA_TODAY" 'night:' "$PHRASE"
   for (( m=0; m < $NLF; ++m)); do echo; done
   if [ $F_ICON -eq 1 ]; then
@@ -79,7 +79,7 @@ if [ $FLG_N -eq 1 ]; then
 fi
 if [ $FLG_T -eq 1 ]; then
   printf "\033[0;${COLOR_CP}m%s\033[0m\n" $(pickup_word "$DATA_LOCALE" 'tomorrow:')
-  [ $TEMP_PRECIP -eq 1 ] && printf "%-5s/%-5s\t☂️: %4s\n" $HI_TOMORROW $LO_TOMORROW $(pickup_word "$DATA_TOMORROW" "precip")
+  [ $TEMP_PRECIP -eq 1 ] && printf "%-5s/ %-5s\t☂️ : %4s\n" $HI_TOMORROW $LO_TOMORROW $(pickup_word "$DATA_TOMORROW" "precip")
   [[ $DETAIL =~ 1|2 ]] && pickup_d_n_word "$DATA_TOMORROW" 'day:' "$PHRASE"
   if [ $F_ICON -eq 1 ]; then
     ICON_TOMORROW=$(printf "%02d" $(pickup_d_n_word "$DATA_TOMORROW" 'day:' 'icon'))
