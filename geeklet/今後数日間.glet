@@ -13,21 +13,16 @@ WEATHER_URL=${WEATHER_URL:='https://www.accuweather.com/en/jp/koto-ku/221230/wea
 # 見出しの色 （30 黒、31 赤、32 緑、33 黄、34 青、35 マゼンタ、36 シアン、37 白、0 デフォルト）
 COLOR_CP='40;37'
 
-# データ整理用関数
-pickup_data() { echo "$1" | grep -m1 $2 | tr '{|}' '\n' | perl -pe 's/,"/\n/g' | tr -d '"'; }
-pickup_word() { echo "$1" | grep -m1 $2 | awk -F: '{print $2}'; }
-
 # 元データ取得
 USER_AGENT='Mozilla/5.0 (Macintosh; Intel Mac OS X)'
 WEATHER_DATA=$(curl -A "$USER_AGENT" --silent $WEATHER_URL)
-DATA_LA=$(pickup_data "$WEATHER_DATA" 'localSummary')
-DATA_LOCALE=$(pickup_data "$WEATHER_DATA" 'pageLocale')
+LA_DATA=$(echo "$WEATHER_DATA" | grep -A5 '&lt;div class="forecast-summary-header"&gt;' | tr -d '\t' | ruby -pe 'gsub(/&amp;#[xX]([0-9a-fA-F]+);/) { [$1.to_i(16)].pack("U") }')
 
 # Looking aheadを取得して表示
-echo $(printf "\033[0;${COLOR_CP}m")$(pickup_word "$DATA_LOCALE" 'lookingAhead'):$(printf "\033[0m") 
-pickup_word "$DATA_LA" 'phrase'</string>
+echo $(printf "\033[0;${COLOR_CP}m")$(echo "$LA_DATA" | grep -A1 '&lt;div class="forecast-summary-header"&gt;' | tr -d '\t' | sed -n 2p):$(printf "\033[0m") 
+echo "$LA_DATA" | grep -A1 '&lt;div class="forecast-summary-text"&gt;' | tr -d '\t' | sed -n 2p</string>
 	<key>DisplayID</key>
-	<integer>1892209665</integer>
+	<integer>1892209153</integer>
 	<key>DropShadow</key>
 	<false/>
 	<key>FailureImage</key>
@@ -72,13 +67,13 @@ pickup_word "$DATA_LA" 'phrase'</string>
 	AAAAAAEMQgAABd7///MmAAAHkwAA/ZD///ui///9owAAA9wAAMBu
 	</data>
 	<key>FontFamily</key>
-	<string>HelveticaNeue-Thin</string>
+	<string>HelveticaNeue-Light</string>
 	<key>FontSize</key>
-	<real>20</real>
+	<real>16</real>
 	<key>ForceCR</key>
 	<true/>
 	<key>GeekletFrame</key>
-	<string>{{77, 315}, {699, 56}}</string>
+	<string>{{140, 345}, {699, 56}}</string>
 	<key>HasShadow</key>
 	<false/>
 	<key>Identifier</key>
@@ -133,7 +128,7 @@ pickup_word "$DATA_LA" 'phrase'</string>
 	<key>TextColor</key>
 	<data>
 	BAtzdHJlYW10eXBlZIHoA4QBQISEhAdOU0NvbG9yAISECE5TT2JqZWN0AIWEAWMBhARm
-	ZmZmAYNS/n8/g27/fz+D2aEmP4Y=
+	ZmZmAYNS/n8/g27/fz+DDr8/P4Y=
 	</data>
 	<key>TextStrikethrough</key>
 	<integer>0</integer>

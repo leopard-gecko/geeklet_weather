@@ -50,6 +50,7 @@ DATA_WEEK=($(echo "$DATA_WEEK_RAW" | sed s/--/^/g))
 IFS="$_IFS"
 LOCALE_SAT=$(echo "$DATA_WEEK_RAW" | grep -A4 "?day=$(expr 6 - $(date +%w) + 1)\"" | sed -n '5p')
 LOCALE_SUN=$(echo "$DATA_WEEK_RAW" | grep -A4 "?day=$(expr 7 - $(date +%w) + 1)\"" | sed -n '5p')
+LOCALE_PRECIP=$(echo "$DATA_WEEK_RAW" | grep -A2 '&lt;div class="info precip"&gt;' | sed -n 3p)
 
 # 日付、曜日、最高・最低気温、降水確率、天気を表示
 for (( i = 0; i &lt; $NUM_L; ++i ))
@@ -62,7 +63,7 @@ do
   PHRASE[$i]=$(echo "${DATA_WEEK[$(expr $i + $AFTER)]}" | grep -A1 '&lt;span class="phrase"&gt;' | grep -v '&lt;span class="phrase"&gt;')
   [ $F_DATE -eq 1 ] &amp;&amp; printf "\033[0;${COLOR_DATE}m%5s\033[0m\t" "${DATE[$i]}"
   [ $F_DOW -eq 1 ] &amp;&amp; echo ${DOW[$i]}
-  [ $F_TEMP_PRECIP -eq 1 ] &amp;&amp; printf "%-4s%-6s\t☂️ :%4s\n" ${HI[$i]} "${LO[$i]}" ${PRECIP[$i]}
+  [ $F_TEMP_PRECIP -eq 1 ] &amp;&amp; printf "%-5s%-6s\t$LOCALE_PRECIP :%4s\n" ${HI[$i]} "${LO[$i]}" ${PRECIP[$i]}
   [ $F_PHRASE -eq 1 ] &amp;&amp; echo ${PHRASE[$i]}
   for (( m=0; m &lt; $NLF; ++m)); do echo; done
 done
@@ -135,7 +136,7 @@ EOT
 	<key>FontSize</key>
 	<real>16</real>
 	<key>GeekletFrame</key>
-	<string>{{449, 481.65625}, {240, 560}}</string>
+	<string>{{449, 474}, {240, 560}}</string>
 	<key>HasShadow</key>
 	<false/>
 	<key>Identifier</key>
