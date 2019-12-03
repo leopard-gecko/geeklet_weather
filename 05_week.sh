@@ -58,7 +58,7 @@ do
   PHRASE[$i]=$(echo "${DATA_WEEK[$(expr $i + $AFTER)]}" | grep -A1 '<span class="phrase">' | grep -v '<span class="phrase">')
   [ $F_DATE -eq 1 ] && printf "\033[0;${COLOR_DATE}m%5s\033[0m\t" "${DATE[$i]}"
   [ $F_DOW -eq 1 ] && echo ${DOW[$i]}
-  [ $F_TEMP_PRECIP -eq 1 ] && printf "%-5s%-6s\t$LOCALE_PRECIP :%4s\n" ${HI[$i]} "${LO[$i]}" ${PRECIP[$i]}
+  [ $F_TEMP_PRECIP -eq 1 ] && printf "%s%s  \t$LOCALE_PRECIP :%4s\n" ${HI[$i]} "${LO[$i]}" ${PRECIP[$i]}
   [ $F_PHRASE -eq 1 ] && echo ${PHRASE[$i]}
   for (( m=0; m < $NLF; ++m)); do echo; done
 done
