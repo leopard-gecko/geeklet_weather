@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>Command</key>
-	<string># 紫外線、降水量、風向などのスクリプト
+	<string># 降水確率、紫外線、降水量、風向などのスクリプト（日中）
 [ -f "$HOME/.bashrc" ] &amp;&amp; source "$HOME/.bashrc"
 [ -f "$HOME/.zshrc" ] &amp;&amp; source "$HOME/.zshrc"
 
@@ -11,10 +11,10 @@
 WEATHER_URL=${WEATHER_URL:='https://www.accuweather.com/en/jp/koto-ku/221230/weather-forecast/221230'}
 
 # 何日後？
-LATER=1
+LATER=0
 
 # 表示する項目（0 表示しない、1 表示する）
-F_DISP[0]=0  #降水確率（Precipitation）
+F_DISP[0]=1  #降水確率（Precipitation）
 F_DISP[1]=1  #最大紫外線指数（Max UV Index）
 F_DISP[2]=0  #雷雨（Thunderstorms）
 F_DISP[3]=1  #降水量（Precipitation）
@@ -24,7 +24,7 @@ F_DISP[6]=0  #みぞれの量（Ice）
 F_DISP[7]=0  #降水時間（Hours of Precipitation）
 F_DISP[8]=0  #降雨時間（Hours of Rain）
 F_DISP[9]=1  #風向（Wind）
-F_DISP[10]=0 #最大瞬間風速（Gusts）
+F_DISP[10]=1 #最大瞬間風速（Gusts）
 
 # 改行表示（0 改行しない、1 改行する）
 LINE_FEED=0
@@ -44,7 +44,7 @@ do
 [[ F_DISP[i] -eq 1 ]] &amp;&amp; echo ${DATA_CUR[i]} | perl -pe "s/\n/$lf/g"
 done</string>
 	<key>DisplayID</key>
-	<integer>1892209665</integer>
+	<integer>1892209153</integer>
 	<key>DropShadow</key>
 	<false/>
 	<key>FailureImage</key>
@@ -89,11 +89,11 @@ done</string>
 	AAAAAAEMQgAABd7///MmAAAHkwAA/ZD///ui///9owAAA9wAAMBu
 	</data>
 	<key>FontFamily</key>
-	<string>HelveticaNeue-Light</string>
+	<string>HelveticaNeue-Medium</string>
 	<key>FontSize</key>
-	<real>12</real>
+	<real>10</real>
 	<key>GeekletFrame</key>
-	<string>{{140, 629.5625}, {700, 45}}</string>
+	<string>{{141.9140625, 459.01953125}, {748, 45}}</string>
 	<key>HasShadow</key>
 	<false/>
 	<key>Identifier</key>
