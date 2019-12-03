@@ -15,25 +15,20 @@
 # 場所のURL（日本語表記にしたい場合は/en/を/ja/に書き換える）
 WEATHER_URL=${WEATHER_URL:='https://www.accuweather.com/en/jp/koto-ku/221230/weather-forecast/221230'}
 
-# 120分間天気に変化がない時のMINUTECASTの表示（0 変化がなければ表示しない、1 常に表示する）
-F_ALWAYS=0
-
-# データ整理用関数
-pickup_data() { echo "$1" | grep -m1 $2 | tr '{|}' '\n' | perl -pe 's/,"/\n/g' | tr -d '"'; }
-pickup_word() { echo "$1" | grep -m1 $2 | awk -F: '{print $2}'; }
+# 見出しの色 （30 黒、31 赤、32 緑、33 黄、34 青、35 マゼンタ、36 シアン、37 白、0 デフォルト）
+COLOR_CP='0'
 
 # 元データ取得
 USER_AGENT='Mozilla/5.0 (Macintosh; Intel Mac OS X)'
 WEATHER_DATA=$(curl -A "$USER_AGENT" --silent $WEATHER_URL)
-DATA_MC=$(pickup_data "$WEATHER_DATA" 'minuteCastSummary')
+DATA_MC=$(echo "$WEATHER_DATA" | grep -A5 '&lt;div class="banner-header"&gt;' | tr -d '\t' | ruby -pe 'gsub(/&amp;#[xX]([0-9a-fA-F]+);/) { [$1.to_i(16)].pack("U") }')
 
 # MINUTECASTを取得して表示
-if [ $(pickup_word "$DATA_MC" 'typeId') -ne 0 ] || [ $F_ALWAYS -eq 1 ];then
-pickup_word "$DATA_MC" 'phrase'
-fi
-</string>
+TITLE=$(echo "$DATA_MC" | grep -A1 '&lt;div class="banner-header"&gt;' | sed -n 2p)
+PHRASE=$(echo "$DATA_MC" | grep -A1 '&lt;div class="banner-text"&gt;' | sed -n 2p)
+[ -n "$TITLE" ] &amp;&amp; echo $(printf "\033[0;${COLOR_CP}m")"$TITLE:$(printf "\033[0m") $PHRASE"</string>
 	<key>DisplayID</key>
-	<integer>1892209665</integer>
+	<integer>1892209153</integer>
 	<key>DisplayStatusImage</key>
 	<false/>
 	<key>DoesOverrideText</key>
@@ -135,7 +130,7 @@ fi
 	<key>FontSize</key>
 	<real>24</real>
 	<key>GeekletFrame</key>
-	<string>{{425, 90}, {677, 30}}</string>
+	<string>{{550, 90.33984375}, {677, 30}}</string>
 	<key>HasShadow</key>
 	<false/>
 	<key>Identifier</key>
@@ -150,6 +145,8 @@ fi
 	<integer>120</integer>
 	<key>SetLocale</key>
 	<true/>
+	<key>StatusImagePosition</key>
+	<integer>9</integer>
 	<key>SuccessImage</key>
 	<data>
 	TU0AKgAABAj///8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAANAAAAGgAAACAAAAAaAAAA
