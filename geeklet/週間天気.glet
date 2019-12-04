@@ -20,10 +20,10 @@ F_WEEKEND=1
 F_DATE=1
 # 曜日を表示する？（0 表示しない、1 表示する）
 F_DOW=1
-# 温度・降水確率を表示する？（0 表示しない、1 表示する）
-F_TEMP_PRECIP=1
-# 天気の詳細（0 表示しない、1 表示する）
-F_PHRASE=1
+# 温度・天気の詳細を表示する？（0 表示しない、1 表示する）
+F_TEMP_PHRASE=1
+# 降水確率を表示する？（0 表示しない、1 表示する）
+F_PRECIP=1
 # 各段の間の改行数
 NLF=1
 # 土曜日と日曜日の色 （30 黒、31 赤、32 緑、33 黄、34 青、35 マゼンタ、36 シアン、37 白、0 デフォルト）
@@ -63,8 +63,8 @@ do
   PHRASE[$i]=$(echo "${DATA_WEEK[$(expr $i + $AFTER)]}" | grep -A1 '&lt;span class="phrase"&gt;' | grep -v '&lt;span class="phrase"&gt;')
   [ $F_DATE -eq 1 ] &amp;&amp; printf "\033[0;${COLOR_DATE}m%5s\033[0m\t" "${DATE[$i]}"
   [ $F_DOW -eq 1 ] &amp;&amp; echo ${DOW[$i]}
-  [ $F_TEMP_PRECIP -eq 1 ] &amp;&amp; printf "%s%s  \t$LOCALE_PRECIP :%4s\n" ${HI[$i]} "${LO[$i]}" ${PRECIP[$i]}
-  [ $F_PHRASE -eq 1 ] &amp;&amp; echo ${PHRASE[$i]}
+  [ $F_TEMP_PHRASE -eq 1 ] &amp;&amp; printf "%-4s%-6s  \t%s\n" ${HI[$i]} "${LO[$i]}" "${PHRASE[$i]}"
+  [ $F_PRECIP -eq 1 ] &amp;&amp; echo $LOCALE_PRECIP: ${PRECIP[$i]}
   for (( m=0; m &lt; $NLF; ++m)); do echo; done
 done
 
@@ -136,7 +136,7 @@ EOT
 	<key>FontSize</key>
 	<real>16</real>
 	<key>GeekletFrame</key>
-	<string>{{449, 474}, {240, 560}}</string>
+	<string>{{490.68359375, 474}, {240, 560}}</string>
 	<key>HasShadow</key>
 	<false/>
 	<key>Identifier</key>
