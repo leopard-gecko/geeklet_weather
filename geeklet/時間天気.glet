@@ -8,7 +8,7 @@
 [ -f "$HOME/.bashrc" ] &amp;&amp; source "$HOME/.bashrc"
 [ -f "$HOME/.zshrc" ] &amp;&amp; source "$HOME/.zshrc"
 
-# 場所のURL（日本語表記にしたい場合は/ja/を/ja/に書き換える）
+# 場所のURL（日本語表記にしたい場合は/en/を/ja/に書き換える）
 WEATHER_URL=${WEATHER_URL:='https://www.accuweather.com/en/jp/koto-ku/221230/weather-forecast/221230'}
 
 # 何時間分？
@@ -24,18 +24,21 @@ MY_STRLN=15
 # 見出しの文字数
 MY_INDEX=9
 # 気温、降水確率、雨量、風速、フレーズを表示する？（1 表示する、0 表示しない）
-F_TEMP=1
-F_PRECIP=1
-F_RAIN=1
-F_WIND=1
-F_PHRASE=0
+F_TEMP=1    # 気温
+F_PRECIP=1  # 降水確率
+F_RAIN=1    # 雨量
+F_SNOW=0    # 降雪量
+F_WIND=1    # 風速
+F_PHRASE=0  # 天気のフレーズ
 # 天気アイコンを取得する？（1 取得する、0 取得しない）
 F_ICON=1
-# AMとPMの色  30 黒、31 赤、32 緑、33 黄、34 青、35 マゼンタ、36 シアン、37 白、0 デフォルト
+# AMとPMの色  30 黒、31 赤、32 緑、33 黄、34 青、35 マゼンタ、36 シアン、37 白、0 デフォルト、10の位を4にすれば背景の色設定
 COLOR_AM='47;31'
 COLOR_PM='47;34'
 # 見出しの色
 COLOR_CP='0'
+# 天気のフレーズの色
+COLOR_PHRASE='3'
 # 日本語対応の等幅フォント？（1 対応【Osaka-等幅、Ricty、Myrica Mなど】、0 非対応【Andale Mono、Courier、Menlo、Monacoなど】）
 F_JFNT=1
 
@@ -49,6 +52,7 @@ mystrln() {
   for ((j = 0; j &lt; $((${#1})); ++j))
   do
     [ $(/bin/echo -n ${1:$j:1} | wc -c) -le 1 ] ; fd=$?
+    [ $F_JFNT -eq 1 ] &amp;&amp; [ $(/bin/echo -n ${1:$j:1}) = '°' ] &amp;&amp; fd=0
     dn=$(($dn+1+$fd))
     [ $dn -gt $2 ] &amp;&amp; break
     mb=$(($mb+$fd))
@@ -62,12 +66,12 @@ mystrln() {
 
 # データ表示用関数
 display_data() {
-  mystr=$(echo "$1" | perl -C -MEncode -pe 's/&amp;#x([0-9A-F]{2,4});/chr(hex($1))/ge')
+  mystr=$(echo "$1" | ruby -pe 'gsub(/&amp;#[xX]([0-9a-fA-F]+);/) { [$1.to_i(16)].pack("U") }')
   mystrln "$mystr" $MY_INDEX S1 S2
   printf "\033[0;${COLOR_CP}m%-*s\033[0m" $S2 "$S1"
   for i in $(seq 0 $SKIP $(($nt-1)))
   do
-    mystrln "$(eval echo '${'$2'[$(($i+$n))]}' | perl -C -MEncode -pe 's/&amp;#x([0-9A-F]{2,4});/chr(hex($1))/ge')" $MY_STRLN S1 S2
+    mystrln "$(eval echo '${'$2'[$(($i+$n))]}' | ruby -pe 'gsub(/&amp;#[xX]([0-9a-fA-F]+);/) { [$1.to_i(16)].pack("U") }')" $MY_STRLN S1 S2
     printf "%-*s" $S2 "$S1"
   done
   echo
@@ -82,14 +86,16 @@ WEATHER_DATA1=$(curl -A "$USER_AGENT" --silent ${WEATHER_URL/weather-forecast/ho
 LOCALE_TEMP=' '
 LOCALE_PRECIP=$(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -m2 -A1 '&lt;div class="precip"&gt;' | grep -v '&lt;div class="precip"&gt;' | grep -v '\-\-' | tr -d '\t' | sed -E 's/$/:/')
 LOCALE_RAIN=$(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A6 '&lt;div class="panel"&gt;' | sed -n 7p  | tr -d '\t')
+LOCALE_SNOW=$(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A11 '&lt;div class="panel"&gt;' | sed -n 11p  | tr -d '\t')
 LOCALE_WIND=$(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A6 '&lt;div class="panel left"&gt;' | sed -n 7p  | tr -d '\t')
 
 # 時刻・気温・降水確率・雨量・風速・天気を配列変数として取得
 _IFS="$IFS";IFS=$'\n'
 HOUR_TIME=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A1 '&lt;div class="date"&gt;' | grep '&lt;p&gt;' | sed -e 's/&lt;p&gt;//g' -e 's/&lt;\/p&gt;//g'))
-HOUR_TEMP=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A1 '&lt;div class="temp metric"&gt;' | grep -v '&lt;div class="temp metric"&gt;' | grep -v '\-\-' | cut -d\&amp; -f1 | sed -E s/$/$JFNT/))
+HOUR_TEMP=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A1 '&lt;div class="temp metric"&gt;' | grep -v '&lt;div class="temp metric"&gt;' | grep -v '\-\-'))
 HOUR_PRECIP=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A2 '&lt;div class="precip"&gt;' | grep \% | grep -v '\-\-'))
 HOUR_RAIN=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A1 $LOCALE_RAIN | grep -v $LOCALE_RAIN | grep -v '\-\-'))
+HOUR_SNOW=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A1 $LOCALE_SNOW | grep -v $LOCALE_SNOW | grep -v '\-\-'))
 HOUR_WIND=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A1 $LOCALE_WIND | grep -v $LOCALE_WIND | grep -v '\-\-'))
 HOUR_PHRASE=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A1 '&lt;span class="phrase"&gt;' | grep -v '&lt;span class="phrase"&gt;' | grep -v '\-\-'))
 IFS="$_IFS"
@@ -110,7 +116,7 @@ do
   printf "%*s" $MY_INDEX " "
   for i in $(seq 0 $SKIP $(($nt-1)))
   do
-    MY_TIME=$(echo "${HOUR_TIME[$(($i+$n))]}" | perl -C -MEncode -pe 's/&amp;#x([0-9A-F]{2,4});/chr(hex($1))/ge')
+    MY_TIME=$(echo "${HOUR_TIME[$(($i+$n))]}" | ruby -pe 'gsub(/&amp;#[xX]([0-9a-fA-F]+);/) { [$1.to_i(16)].pack("U") }')
     mystrln "$MY_TIME" $MY_STRLN S1 S2
     if [ "$(echo $WEATHER_URL | grep $LNAP)" ]; then
       printf "%-*s" $S2 "$S1" | sed -E "/$L_AM/s/^/$(printf "\033[0;${COLOR_AM}m")/" | sed -E "/$L_PM/s/^/$(printf "\033[0;${COLOR_PM}m")/" | sed -E 's/$/'$(printf "\033[0m")'/' | tr -d '\n'
@@ -123,6 +129,7 @@ do
   [ $F_TEMP -eq 1 ] &amp;&amp; display_data "$LOCALE_TEMP" 'HOUR_TEMP'
   [ $F_PRECIP -eq 1 ] &amp;&amp; display_data "$LOCALE_PRECIP" 'HOUR_PRECIP'
   [ $F_RAIN -eq 1 ] &amp;&amp; display_data "$LOCALE_RAIN" 'HOUR_RAIN'
+  [ $F_SNOW -eq 1 ] &amp;&amp; display_data "$LOCALE_SNOW" 'HOUR_SNOW'
   [ $F_WIND -eq 1 ] &amp;&amp; display_data "$LOCALE_WIND" 'HOUR_WIND'
   # 天気を左揃えの指定した桁数かつ4段で表示
   if [ $F_PHRASE -eq 1 ]; then
@@ -131,9 +138,9 @@ do
       printf "%-*s" $MY_INDEX " "
       for i in $(seq 0 $SKIP $(($nt-1)))
       do
-        MY_PHRASE=$(echo "${HOUR_PHRASE[$(($i+$n))]}" | perl -C -MEncode -pe 's/&amp;#x([0-9A-F]{2,4});/chr(hex($1))/ge')
+        MY_PHRASE=$(echo "${HOUR_PHRASE[$(($i+$n))]}" | ruby -pe 'gsub(/&amp;#[xX]([0-9a-fA-F]+);/) { [$1.to_i(16)].pack("U") }')
         mystrln "$(echo "$MY_PHRASE" | awk -v "knum=$k" '{printf "%s", $knum}')" $MY_STRLN S1 S2
-        printf "%-*s" $S2 "$S1"
+        printf "\033[0;${COLOR_PHRASE}m%-*s\033[0m" $S2 "$S1"
       done
       echo
     done
@@ -208,7 +215,7 @@ EOT
 	<key>FontSize</key>
 	<real>13</real>
 	<key>GeekletFrame</key>
-	<string>{{20, 635}, {741, 425}}</string>
+	<string>{{20, 635}, {742.67578125, 273.46875}}</string>
 	<key>HasShadow</key>
 	<false/>
 	<key>Identifier</key>

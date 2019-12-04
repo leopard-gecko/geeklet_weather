@@ -12,14 +12,23 @@ FLG_N=1  # 夜間
 FLG_T=1  # 明日
 # 表示する内容（0 表示しない、1 表示する）
 F_TEMP=1    # 温度・天気
-F_PRECIP=1  # 降水確率・降水量（現在の天気のみ湿度と気圧）
+F_PRECIP=1  # 降水確率・降水量（現在の天気では湿度と気圧）
 F_UV=0      # 紫外線量
+F_SNOW=0    # 降水量の代わりに積雪量を表示する
 # 各段の間の改行数
 NLF=1
 # 見出しの色 （30 黒、31 赤、32 緑、33 黄、34 青、35 マゼンタ、36 シアン、37 白、0 デフォルト、二桁目が4で背景の色指定）
 COLOR_CP="37;40"
 # 天気アイコンを取得する？（0 取得しない、1 取得する）
 F_ICON=1
+
+# 設定
+if
+[ $F_SNOW -eq 1 ];then
+P_OR_S=4
+else
+P_OR_S=2
+fi
 
 # データ整理用関数
 pickup_data_1() { echo "$1" | awk /$2/,/$3/ | grep -A1 '<p>' | grep -v '<p>' | perl -pe 's/--\n//g' | tr -d '\t' | ruby -pe 'gsub(/&#[xX]([0-9a-fA-F]+);/) { [$1.to_i(16)].pack("U") }'; }
@@ -61,7 +70,7 @@ fi
 if [ $FLG_D -eq 1 ]; then
   echo "\033[0;${COLOR_CP}m"${TITLE[1]}"\033[0m"
   [ $F_TEMP -eq 1 ] && printf "%-4s%-6s  \t%s\n" ${TEMP_HI[1]} ${TEMP_LO[1]} "${PHRASE[1]}"
-  [ $F_PRECIP -eq 1 ] && echo ${DATA_TODAY_DAY[0]}"\t"${DATA_TODAY_DAY[3]}
+  [ $F_PRECIP -eq 1 ] && echo ${DATA_TODAY_DAY[0]}"\t"${DATA_TODAY_DAY[$[$P_OR_S+1]]}
   [ $F_UV -eq 1 ] && echo ${DATA_TODAY_DAY[1]}
   for (( m=0; m < $NLF; ++m)); do echo; done
   if [ $F_ICON -eq 1 ]; then
@@ -71,7 +80,7 @@ fi
 if [ $FLG_N -eq 1 ]; then
   echo "\033[0;${COLOR_CP}m"${TITLE[2]}"\033[0m"
   [ $F_TEMP -eq 1 ] && printf "%-4s%-6s  \t%s\n" ${TEMP_HI[2]} ${TEMP_LO[2]} "${PHRASE[2]}"
-  [ $F_PRECIP -eq 1 ] && echo ${DATA_TODAY_NIT[0]}"\t"${DATA_TODAY_NIT[2]}
+  [ $F_PRECIP -eq 1 ] && echo ${DATA_TODAY_NIT[0]}"\t"${DATA_TODAY_NIT[$P_OR_S]}
   [ $F_UV -eq 1 ] && echo
   for (( m=0; m < $NLF; ++m)); do echo; done
   if [ $F_ICON -eq 1 ]; then
@@ -81,7 +90,7 @@ fi
 if [ $FLG_T -eq 1 ]; then
   echo "\033[0;${COLOR_CP}m"${TITLE[3]}"\033[0m"
   [ $F_TEMP -eq 1 ] && printf "%-4s%-6s  \t%s\n" ${TEMP_HI[3]} "${TEMP_LO[3]}" "${PHRASE[3]}"
-  [ $F_PRECIP -eq 1 ] && echo ${DATA_TOMORROW[0]}"\t"${DATA_TOMORROW[3]}
+  [ $F_PRECIP -eq 1 ] && echo ${DATA_TOMORROW[0]}"\t"${DATA_TOMORROW[$[$P_OR_S+1]]}
   [ $F_UV -eq 1 ] && echo ${DATA_TOMORROW[1]}
   if [ $F_ICON -eq 1 ]; then
     echo "https://vortex.accuweather.com/adc2010/images/slate/icons/"${ICON_NO[3]}"-l.png" | xargs curl --silent -o /tmp/weather_tomorrow.png
