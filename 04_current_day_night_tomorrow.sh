@@ -23,12 +23,7 @@ COLOR_CP="37;40"
 F_ICON=1
 
 # 設定
-if
-[ $F_SNOW -eq 1 ];then
-P_OR_S=4
-else
-P_OR_S=2
-fi
+[ $F_SNOW -eq 1 ] && P_OR_S=4 || P_OR_S=2
 
 # データ整理用関数
 pickup_data_1() { echo "$1" | awk /$2/,/$3/ | grep -A1 '<p>' | grep -v '<p>' | perl -pe 's/--\n//g' | tr -d '\t' | ruby -pe 'gsub(/&#[xX]([0-9a-fA-F]+);/) { [$1.to_i(16)].pack("U") }'; }
@@ -59,7 +54,7 @@ IFS="$_IFS"
 #  現在、日中、夜間、明日の天気を表示して天気アイコンを取得し保存
 if [ $FLG_C -eq 1 ]; then
   echo "\033[0;${COLOR_CP}m"${TITLE[0]}"\033[0m"
-  [ $F_TEMP -eq 1 ] && printf "%-4s%-6s  \t%s\n" ${TEMP_HI[0]} ${TEMP_LO[0]} "${PHRASE[0]}"
+  [ $F_TEMP -eq 1 ] && printf "%-5s%-6s  \t%s\n" ${TEMP_HI[0]} ${TEMP_LO[0]} "${PHRASE[0]}"
   [ $F_PRECIP -eq 1 ] && echo ${DATA_CUR[0]}"\t"${DATA_CUR[3]}
   [ $F_UV -eq 1 ] && echo ${DATA_CUR[1]}
   for (( m=0; m < $NLF; ++m)); do echo; done
@@ -69,7 +64,7 @@ if [ $FLG_C -eq 1 ]; then
 fi
 if [ $FLG_D -eq 1 ]; then
   echo "\033[0;${COLOR_CP}m"${TITLE[1]}"\033[0m"
-  [ $F_TEMP -eq 1 ] && printf "%-4s%-6s  \t%s\n" ${TEMP_HI[1]} ${TEMP_LO[1]} "${PHRASE[1]}"
+  [ $F_TEMP -eq 1 ] && printf "%-5s%-6s  \t%s\n" ${TEMP_HI[1]} ${TEMP_LO[1]} "${PHRASE[1]}"
   [ $F_PRECIP -eq 1 ] && echo ${DATA_TODAY_DAY[0]}"\t"${DATA_TODAY_DAY[$[$P_OR_S+1]]}
   [ $F_UV -eq 1 ] && echo ${DATA_TODAY_DAY[1]}
   for (( m=0; m < $NLF; ++m)); do echo; done
@@ -79,7 +74,7 @@ if [ $FLG_D -eq 1 ]; then
 fi
 if [ $FLG_N -eq 1 ]; then
   echo "\033[0;${COLOR_CP}m"${TITLE[2]}"\033[0m"
-  [ $F_TEMP -eq 1 ] && printf "%-4s%-6s  \t%s\n" ${TEMP_HI[2]} ${TEMP_LO[2]} "${PHRASE[2]}"
+  [ $F_TEMP -eq 1 ] && printf "%-5s%-6s  \t%s\n" ${TEMP_HI[2]} ${TEMP_LO[2]} "${PHRASE[2]}"
   [ $F_PRECIP -eq 1 ] && echo ${DATA_TODAY_NIT[0]}"\t"${DATA_TODAY_NIT[$P_OR_S]}
   [ $F_UV -eq 1 ] && echo
   for (( m=0; m < $NLF; ++m)); do echo; done
@@ -89,7 +84,7 @@ if [ $FLG_N -eq 1 ]; then
 fi
 if [ $FLG_T -eq 1 ]; then
   echo "\033[0;${COLOR_CP}m"${TITLE[3]}"\033[0m"
-  [ $F_TEMP -eq 1 ] && printf "%-4s%-6s  \t%s\n" ${TEMP_HI[3]} "${TEMP_LO[3]}" "${PHRASE[3]}"
+  [ $F_TEMP -eq 1 ] && printf "%-5s%-6s  \t%s\n" ${TEMP_HI[3]} "${TEMP_LO[3]}" "${PHRASE[3]}"
   [ $F_PRECIP -eq 1 ] && echo ${DATA_TOMORROW[0]}"\t"${DATA_TOMORROW[$[$P_OR_S+1]]}
   [ $F_UV -eq 1 ] && echo ${DATA_TOMORROW[1]}
   if [ $F_ICON -eq 1 ]; then
