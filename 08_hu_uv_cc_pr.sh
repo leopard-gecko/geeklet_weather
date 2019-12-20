@@ -6,15 +6,15 @@
 WEATHER_URL=${WEATHER_URL:='https://www.accuweather.com/en/jp/koto-ku/221230/weather-forecast/221230'}
 
 # 表示する項目（0 表示しない、1 表示する）
-F_DISP[0]=1  #湿度（Humidity）
-F_DISP[1]=1  #紫外線指数（UV Index）
-F_DISP[2]=1  #雲量（Cloud Cover）
-F_DISP[3]=1  #気圧（Pressure）
+F_DISP[0]=1  #紫外線指数（UV Index）
+F_DISP[1]=1  #風向（Wind）
+F_DISP[2]=1  #最大瞬間風速（Gusts）
+F_DISP[3]=1  #湿度（Humidity）
 F_DISP[4]=0  #露点（Dew Point）
-F_DISP[5]=0  #視界（Visibility）
-F_DISP[6]=1  #RealFeel®の変化（RealFeel® Shade）
-F_DISP[7]=1  #風向（Wind）
-F_DISP[8]=1  #最大瞬間風速（Gusts）
+F_DISP[5]=1  #気圧（Pressure）
+F_DISP[6]=1  #雲量（Cloud Cover）
+F_DISP[7]=0  #視界（Visibility）
+F_DISP[8]=0  #雲底高度（Ceiling）
 
 # 改行表示（0 改行しない、1 改行する）
 LINE_FEED=0
