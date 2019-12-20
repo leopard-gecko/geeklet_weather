@@ -16,17 +16,18 @@ F_PRECIP=1  # 降水確率・降水量（現在の天気では湿度と気圧）
 F_UV=0      # 紫外線量
 F_SNOW=0    # 降水量の代わりに積雪量を表示する
 # 各段の間の改行数
-NLF=1
+NLF=0
 # 見出しの色 （30 黒、31 赤、32 緑、33 黄、34 青、35 マゼンタ、36 シアン、37 白、0 デフォルト、二桁目が4で背景の色指定）
 COLOR_CP="37;40"
 # 天気アイコンを取得する？（0 取得しない、1 取得する）
 F_ICON=1
 
 # 設定
-[ $F_SNOW -eq 1 ] && P_OR_S=4 || P_OR_S=2
+[ $F_SNOW -eq 1 ] && P_OR_S=6 || P_OR_S=4
 
 # データ整理用関数
-pickup_data_1() { echo "$1" | awk /$2/,/$3/ | grep -A1 '<p>' | grep -v '<p>' | perl -pe 's/--\n//g' | tr -d '\t' | ruby -pe 'gsub(/&#[xX]([0-9a-fA-F]+);/) { [$1.to_i(16)].pack("U") }'; }
+pickup_data_0() { echo "$1" | awk /"$2"/,/"$3"/ | grep -A1 -e '<p>' -e "$2" | grep -v -e '<p>' -e "$2" | perl -pe 's/--\n//g' | tr -d '\t' | ruby -pe 'gsub(/&#[xX]([0-9a-fA-F]+);/) { [$1.to_i(16)].pack("U") }'; }
+pickup_data_1() { echo "$1" | awk /"$2"/,/"$3"/ | grep -A1 '<p>' | grep -v '<p>' | perl -pe 's/--\n//g' | tr -d '\t' | ruby -pe 'gsub(/&#[xX]([0-9a-fA-F]+);/) { [$1.to_i(16)].pack("U") }'; }
 pickup_data_2() { echo "$1" | grep -A1 $2 | grep -v $2 | perl -pe 's/--\n//g'; }
 
 # 元データ取得
@@ -35,11 +36,13 @@ WEATHER_DATA="$(curl -A "$USER_AGENT" --silent $WEATHER_URL)"
 WEATHER_TODAY=$(curl -A "$USER_AGENT" --silent ${WEATHER_URL/weather-forecast/current-weather})
 WEATHER_TOMORROW=$(curl -A "$USER_AGENT" --silent ${WEATHER_URL/weather-forecast/daily-weather-forecast}?day=2)
 DATA_NOW="$(echo "$WEATHER_DATA" | awk '/a class="panel panel-fade-in card current "/,/threeday-panel-next/' | tr -d '\t' | ruby -pe 'gsub(/&#[xX]([0-9a-fA-F]+);/) { [$1.to_i(16)].pack("U") }')"
+DATA_TODAY=$(pickup_data_0 "$WEATHER_TODAY" '<div class="details-card card panel details">' '<div class="quarter-day-links">')
+N_T_N=$(echo "$DATA_TODAY" | grep -n '<div class="list">' | cut -f 1 -d ":" | sed -n 2p)
 _IFS="$IFS";IFS=$'\n'
-DATA_CUR=($(pickup_data_1 "$WEATHER_TODAY" '<div class="accordion-item-content accordion-item-content">' '<div class="short-list">'))
-DATA_TODAY_DAY=($(pickup_data_1 "$WEATHER_TODAY" '<div class="details-card card panel details allow-wrap">' '<div class="quarter-day-links">' | sed -n 1,11p))
-DATA_TODAY_NIT=($(pickup_data_1 "$WEATHER_TODAY" '<div class="details-card card panel details allow-wrap">' '<div class="quarter-day-links">' | sed -n 12,21p))
-DATA_TOMORROW=($(pickup_data_1 "$WEATHER_TOMORROW" '<div class="details-card card panel details allow-wrap">' '<div class="quarter-day-links">' | sed -n 1,11p))
+DATA_CUR=($(pickup_data_1 "$WEATHER_TODAY" '<div class="details-card card panel">' '<\/div>'))
+DATA_TODAY_DAY=($(echo "$DATA_TODAY" | sed -n 1,"$N_T_N"p | grep -v '<div class="list">'))
+DATA_TODAY_NIT=($(echo "$DATA_TODAY" | sed 1,"$N_T_N"d))
+DATA_TOMORROW=($(pickup_data_1 "$WEATHER_TOMORROW" '<div class="details-card card panel details">' '<div class="quarter-day-links">' | sed -n 1,9p))
 IFS="$_IFS"
 
 # 各データ取得
@@ -55,7 +58,7 @@ IFS="$_IFS"
 if [ $FLG_C -eq 1 ]; then
   echo "\033[0;${COLOR_CP}m"${TITLE[0]}"\033[0m"
   [ $F_TEMP -eq 1 ] && printf "%-5s%-6s  \t%s\n" ${TEMP_HI[0]} ${TEMP_LO[0]} "${PHRASE[0]}"
-  [ $F_PRECIP -eq 1 ] && echo ${DATA_CUR[0]}"\t"${DATA_CUR[3]}
+  [ $F_PRECIP -eq 1 ] && echo ${DATA_CUR[3]} && echo ${DATA_CUR[5]}
   [ $F_UV -eq 1 ] && echo ${DATA_CUR[1]}
   for (( m=0; m < $NLF; ++m)); do echo; done
   if [ $F_ICON -eq 1 ]; then
@@ -65,7 +68,7 @@ fi
 if [ $FLG_D -eq 1 ]; then
   echo "\033[0;${COLOR_CP}m"${TITLE[1]}"\033[0m"
   [ $F_TEMP -eq 1 ] && printf "%-5s%-6s  \t%s\n" ${TEMP_HI[1]} ${TEMP_LO[1]} "${PHRASE[1]}"
-  [ $F_PRECIP -eq 1 ] && echo ${DATA_TODAY_DAY[0]}"\t"${DATA_TODAY_DAY[$[$P_OR_S+1]]}
+  [ $F_PRECIP -eq 1 ] && echo ${DATA_TODAY_DAY[3]} && echo ${DATA_TODAY_DAY[$[$P_OR_S+1]]}
   [ $F_UV -eq 1 ] && echo ${DATA_TODAY_DAY[1]}
   for (( m=0; m < $NLF; ++m)); do echo; done
   if [ $F_ICON -eq 1 ]; then
@@ -75,7 +78,7 @@ fi
 if [ $FLG_N -eq 1 ]; then
   echo "\033[0;${COLOR_CP}m"${TITLE[2]}"\033[0m"
   [ $F_TEMP -eq 1 ] && printf "%-5s%-6s  \t%s\n" ${TEMP_HI[2]} ${TEMP_LO[2]} "${PHRASE[2]}"
-  [ $F_PRECIP -eq 1 ] && echo ${DATA_TODAY_NIT[0]}"\t"${DATA_TODAY_NIT[$P_OR_S]}
+  [ $F_PRECIP -eq 1 ] && echo ${DATA_TODAY_NIT[2]} && echo ${DATA_TODAY_NIT[$P_OR_S]}
   [ $F_UV -eq 1 ] && echo
   for (( m=0; m < $NLF; ++m)); do echo; done
   if [ $F_ICON -eq 1 ]; then
@@ -85,7 +88,7 @@ fi
 if [ $FLG_T -eq 1 ]; then
   echo "\033[0;${COLOR_CP}m"${TITLE[3]}"\033[0m"
   [ $F_TEMP -eq 1 ] && printf "%-5s%-6s  \t%s\n" ${TEMP_HI[3]} "${TEMP_LO[3]}" "${PHRASE[3]}"
-  [ $F_PRECIP -eq 1 ] && echo ${DATA_TOMORROW[0]}"\t"${DATA_TOMORROW[$[$P_OR_S+1]]}
+  [ $F_PRECIP -eq 1 ] && echo ${DATA_TOMORROW[3]} && echo ${DATA_TOMORROW[$[$P_OR_S+1]]}
   [ $F_UV -eq 1 ] && echo ${DATA_TOMORROW[1]}
   if [ $F_ICON -eq 1 ]; then
     echo "https://vortex.accuweather.com/adc2010/images/slate/icons/"${ICON_NO[3]}"-l.png" | xargs curl --silent -o /tmp/weather_tomorrow.png
