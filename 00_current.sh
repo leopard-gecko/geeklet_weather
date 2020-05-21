@@ -16,7 +16,7 @@ PHRASE=$(echo "$DATA_CUR" | grep -A1 '<div class="cond">' | sed -n 2p)
 echo $TEMP $PHRASE
 
 # 天気アイコンのナンバーを取得し画像を保存
-ICON_CUR=$(printf "%02d" $(echo "$DATA_CUR" | grep 'img class="weather-icon icon"' | awk -F'weathericons/' '{print $2}' | cut -f 1 -d "."))
+ICON_CUR=$(printf "%02d" $(echo "$DATA_CUR" | grep 'class="weather-icon icon"' | awk -F'weathericons/' '{print $2}' | cut -f 1 -d "."))
 echo "https://vortex.accuweather.com/adc2010/images/icons-numbered/"$ICON_CUR"-xl.png" | xargs curl --silent -o /tmp/weather_now.png
 
 # シンプルなデザインの天気アイコンを使いたい場合はこれに書き換える

@@ -55,7 +55,7 @@ TITLE=($(pickup_data_2 "$DATA_NOW" '<p class="module-header">'))
 TEMP_HI=($(pickup_data_2 "$DATA_NOW" '<span class="high">'))
 TEMP_LO=($(pickup_data_2 "$DATA_NOW" '<span class="low">'))
 PHRASE=($(pickup_data_2 "$DATA_NOW" '<div class="cond">'))
-ICON_NO=($(printf "%02d\n" $(echo "$DATA_NOW" | grep 'img class="weather-icon icon"' | awk -F'weathericons/' '{print $2}' | cut -f 1 -d ".")))
+ICON_NO=($(printf "%02d\n" $(echo "$DATA_NOW" | grep 'class="weather-icon icon"' | awk -F'weathericons/' '{print $2}' | cut -f 1 -d ".")))
 IFS="$_IFS"
 
 #  現在、日中、夜間、明日の天気を表示して天気アイコンを取得し保存

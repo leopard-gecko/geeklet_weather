@@ -96,7 +96,7 @@ HOUR_PHRASE=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A1 '<span class="p
 IFS="$_IFS"
 
 # 指定した時間分の天気アイコンのナンバーをゼロパディングし配列変数として取得
-HOUR_ICON=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep 'img class="weather-icon icon"' | awk -F'/images/weathericons/' '{print $2}' | cut -d. -f1 | awk '{printf "%02d\n", $1}' ))
+HOUR_ICON=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep 'class="weather-icon icon"' | awk -F'/images/weathericons/' '{print $2}' | cut -d. -f1 | awk '{printf "%02d\n", $1}' ))
 
 # 時刻・天気を表示
 n=0
