@@ -19,20 +19,19 @@ MY_STRLN=15
 # 見出しの文字数
 MY_INDEX=9
 # 気温、降水確率、雨量、風速、フレーズを表示する？（1 表示する、0 表示しない）
-F_TEMP=1    # 気温
-F_PRECIP=1  # 降水確率
-F_RAIN=1    # 雨量
-F_SNOW=0    # 降雪量
-F_WIND=1    # 風速
-F_PHRASE=0  # 天気のフレーズ
+F_TEMP=1
+F_PRECIP=1
+F_RAIN=1
+F_WIND=1
+F_PHRASE=1
 # 天気アイコンを取得する？（1 取得する、0 取得しない）
 F_ICON=1
-# AMとPMの色  30 黒、31 赤、32 緑、33 黄、34 青、35 マゼンタ、36 シアン、37 白、0 デフォルト、10の位を4にすれば背景の色設定
-COLOR_AM='47;31'
-COLOR_PM='47;34'
+# AMとPMの色  30 黒、31 赤、32 緑、33 黄、34 青、35 マゼンタ、36 シアン、37 白、0 デフォルト
+COLOR_AM='47;31;1'
+COLOR_PM='47;34;1'
 # 見出しの色
 COLOR_CP='0'
-# 天気のフレーズの色
+# 天気フレーズの色
 COLOR_PHRASE='3'
 # 日本語対応の等幅フォント？（1 対応【Osaka-等幅、Ricty、Myrica Mなど】、0 非対応【Andale Mono、Courier、Menlo、Monacoなど】）
 F_JFNT=1
@@ -47,7 +46,6 @@ mystrln() {
   for ((j = 0; j < $((${#1})); ++j))
   do
     [ $(/bin/echo -n ${1:$j:1} | wc -c) -le 1 ] ; fd=$?
-    [ $F_JFNT -eq 1 ] && [ $(/bin/echo -n ${1:$j:1}) = '°' ] && fd=0
     dn=$(($dn+1+$fd))
     [ $dn -gt $2 ] && break
     mb=$(($mb+$fd))
@@ -61,12 +59,12 @@ mystrln() {
 
 # データ表示用関数
 display_data() {
-  mystr=$(echo "$1" | ruby -pe 'gsub(/&#[xX]([0-9a-fA-F]+);/) { [$1.to_i(16)].pack("U") }')
+  mystr=$(echo "$1" | perl -C -MEncode -pe 's/&#x([0-9A-F]{2,4});/chr(hex($1))/ge')
   mystrln "$mystr" $MY_INDEX S1 S2
   printf "\033[0;${COLOR_CP}m%-*s\033[0m" $S2 "$S1"
   for i in $(seq 0 $SKIP $(($nt-1)))
   do
-    mystrln "$(eval echo '${'$2'[$(($i+$n))]}' | ruby -pe 'gsub(/&#[xX]([0-9a-fA-F]+);/) { [$1.to_i(16)].pack("U") }')" $MY_STRLN S1 S2
+    mystrln "$(eval echo '${'$2'[$(($i+$n))]}' | perl -C -MEncode -pe 's/&#x([0-9A-F]{2,4});/chr(hex($1))/ge')" $MY_STRLN S1 S2
     printf "%-*s" $S2 "$S1"
   done
   echo
@@ -79,23 +77,30 @@ WEATHER_DATA1=$(curl -A "$USER_AGENT" --silent ${WEATHER_URL/weather-forecast/ho
 
 # 表示する項目名を取得
 LOCALE_TEMP=' '
-LOCALE_PRECIP=$(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -m2 -A1 '<div class="precip">' | grep -v '<div class="precip">' | grep -v '\-\-' | tr -d '\t' | sed -E 's/$/:/')
-LOCALE_RAIN=$(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A6 '<div class="panel">' | sed -n 7p  | tr -d '\t')
-LOCALE_SNOW=$(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A11 '<div class="panel">' | sed -n 11p  | tr -d '\t')
-LOCALE_WIND=$(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A6 '<div class="panel left">' | sed -n 7p  | tr -d '\t')
+LOCALE_PRECIP=''
+
+if [ "$(echo $WEATHER_URL | grep 'com/en/')" ]; then
+	LOCALE_RAIN="Rain"
+	LOCALE_WIND="Wind"
+elif [ "$(echo $WEATHER_URL | grep 'com/ja/')" ]; then
+	LOCALE_RAIN="&#x96E8;"
+	LOCALE_WIND="&#x98A8;&#x5411;"
+else
+	F_RAIN=0
+	F_WIND=0
+fi
 
 # 時刻・気温・降水確率・雨量・風速・天気を配列変数として取得
 _IFS="$IFS";IFS=$'\n'
-HOUR_TIME=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A1 '<div class="date">' | grep '<p>' | sed -e 's/<p>//g' -e 's/<\/p>//g'))
-HOUR_TEMP=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A1 '<div class="temp metric">' | grep -v '<div class="temp metric">' | grep -v '\-\-'))
+HOUR_TIME=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A1 'class="date"' | grep 'span' | sed -e 's/<span>//g' -e 's/<\/span>//g'))
+HOUR_TEMP=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A1 '<div class="temp metric">' | grep -v '<div class="temp metric">' | grep -v '\-\-' | cut -d\& -f1 | sed -E s/$/$JFNT/))
 HOUR_PRECIP=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A2 '<div class="precip">' | grep \% | grep -v '\-\-'))
-HOUR_RAIN=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A1 $LOCALE_RAIN | grep -v $LOCALE_RAIN | grep -v '\-\-'))
-HOUR_SNOW=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A1 $LOCALE_SNOW | grep -v $LOCALE_SNOW | grep -v '\-\-'))
-HOUR_WIND=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A1 $LOCALE_WIND | grep -v $LOCALE_WIND | grep -v '\-\-'))
+HOUR_RAIN=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A40 '<div class="panel left">' | grep -E -A1 "$LOCALE_RAIN|<div class=\"panel left\">" | grep -E "<div class=\"panel left\">|value" | tr -d '\t' | perl -0pe 's/<div class="panel left">[\n ]+<span class="value">//g' | sed -e 's/<[^>]*>/ /g'))
+HOUR_WIND=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A1 "$LOCALE_WIND$" | grep '<span class="value"' | sed -e 's/<[^>]*>//g' | tr -d '\t'))
 HOUR_PHRASE=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A1 '<span class="phrase">' | grep -v '<span class="phrase">' | grep -v '\-\-'))
 IFS="$_IFS"
 
-# 指定した時間分の天気アイコンのナンバーをゼロパディングし配列変数として取得
+# 天気アイコンのナンバーをゼロパディングし配列変数として取得
 HOUR_ICON=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep 'class="weather-icon icon"' | awk -F'/images/weathericons/' '{print $2}' | cut -d. -f1 | awk '{printf "%02d\n", $1}' ))
 
 # 時刻・天気を表示
@@ -111,7 +116,7 @@ do
   printf "%*s" $MY_INDEX " "
   for i in $(seq 0 $SKIP $(($nt-1)))
   do
-    MY_TIME=$(echo "${HOUR_TIME[$(($i+$n))]}" | ruby -pe 'gsub(/&#[xX]([0-9a-fA-F]+);/) { [$1.to_i(16)].pack("U") }')
+    MY_TIME=$(echo "${HOUR_TIME[$(($i+$n))]}" | perl -C -MEncode -pe 's/&#x([0-9A-F]{2,4});/chr(hex($1))/ge')
     mystrln "$MY_TIME" $MY_STRLN S1 S2
     if [ "$(echo $WEATHER_URL | grep $LNAP)" ]; then
       printf "%-*s" $S2 "$S1" | sed -E "/$L_AM/s/^/$(printf "\033[0;${COLOR_AM}m")/" | sed -E "/$L_PM/s/^/$(printf "\033[0;${COLOR_PM}m")/" | sed -E 's/$/'$(printf "\033[0m")'/' | tr -d '\n'
@@ -124,7 +129,6 @@ do
   [ $F_TEMP -eq 1 ] && display_data "$LOCALE_TEMP" 'HOUR_TEMP'
   [ $F_PRECIP -eq 1 ] && display_data "$LOCALE_PRECIP" 'HOUR_PRECIP'
   [ $F_RAIN -eq 1 ] && display_data "$LOCALE_RAIN" 'HOUR_RAIN'
-  [ $F_SNOW -eq 1 ] && display_data "$LOCALE_SNOW" 'HOUR_SNOW'
   [ $F_WIND -eq 1 ] && display_data "$LOCALE_WIND" 'HOUR_WIND'
   # 天気を左揃えの指定した桁数かつ4段で表示
   if [ $F_PHRASE -eq 1 ]; then
@@ -133,7 +137,7 @@ do
       printf "%-*s" $MY_INDEX " "
       for i in $(seq 0 $SKIP $(($nt-1)))
       do
-        MY_PHRASE=$(echo "${HOUR_PHRASE[$(($i+$n))]}" | ruby -pe 'gsub(/&#[xX]([0-9a-fA-F]+);/) { [$1.to_i(16)].pack("U") }')
+        MY_PHRASE=$(echo "${HOUR_PHRASE[$(($i+$n))]}" | perl -C -MEncode -pe 's/&#x([0-9A-F]{2,4});/chr(hex($1))/ge')
         mystrln "$(echo "$MY_PHRASE" | awk -v "knum=$k" '{printf "%s", $knum}')" $MY_STRLN S1 S2
         printf "\033[0;${COLOR_PHRASE}m%-*s\033[0m" $S2 "$S1"
       done
