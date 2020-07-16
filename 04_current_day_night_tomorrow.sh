@@ -38,8 +38,8 @@ pickup_data_2() { echo "$1" | grep -A1 $2 | grep -v $2 | perl -pe 's/--\n//g'; }
 USER_AGENT='Mozilla/5.0 (Macintosh; Intel Mac OS X)'
 WEATHER_DATA="$(curl -A "$USER_AGENT" --silent $WEATHER_URL)"
 WEATHER_TODAY=$(curl -A "$USER_AGENT" --silent ${WEATHER_URL/weather-forecast/current-weather})
-WEATHER_TOMORROW=$(curl -A "$USER_AGENT" --silent ${WEATHER_URL/weather-forecast/daily-weather-forecast}?day=2)
-DATA_NOW="$(echo "$WEATHER_DATA" | awk '/a class="panel panel-fade-in card current "/,/threeday-panel-next/' | tr -d '\t' | ruby -pe 'gsub(/&#[xX]([0-9a-fA-F]+);/) { [$1.to_i(16)].pack("U") }')"
+WEATHER_TOMORROW=$(curl -A "$USER_AGENT" --silent "${WEATHER_URL/weather-forecast/daily-weather-forecast}?day=2")
+DATA_NOW="$(echo "$WEATHER_DATA" | awk '/glacier-ad top content-module/,/connatix/' | tr -d '\t' | ruby -pe 'gsub(/&#[xX]([0-9a-fA-F]+);/) { [$1.to_i(16)].pack("U") }')"
 DATA_TODAY=$(pickup_data_0 "$WEATHER_TODAY" '<div class="details-card card panel details">' '<div class="quarter-day-links">')
 N_T_N=$(echo "$DATA_TODAY" | grep -n '<div class="list">' | cut -f 1 -d ":" | sed -n 2p)
 _IFS="$IFS";IFS=$'\n'
@@ -51,33 +51,40 @@ IFS="$_IFS"
 
 # 各データ取得
 _IFS="$IFS";IFS=$'\n'
-TITLE=($(pickup_data_2 "$DATA_NOW" '<p class="module-header">'))
-TEMP_HI=($(pickup_data_2 "$DATA_NOW" '<span class="high">'))
-TEMP_LO=($(pickup_data_2 "$DATA_NOW" '<span class="low">'))
-PHRASE=($(pickup_data_2 "$DATA_NOW" '<div class="cond">'))
-ICON_NO=($(printf "%02d\n" $(echo "$DATA_NOW" | grep 'class="weather-icon icon"' | awk -F'weathericons/' '{print $2}' | cut -f 1 -d ".")))
+TITLE=($(pickup_data_2 "$WEATHER_TODAY" 'module-header title' |  tr -d '\t'  | ruby -pe 'gsub(/&#[xX]([0-9a-fA-F]+);/) { [$1.to_i(16)].pack("U") }';))
+TITLE_TOMORROW=$(echo "$WEATHER_DATA" | grep -A2 '?day=2' | grep -A1 'card-header' | grep -v 'card-header' | sed -e 's/<[^>]*>//g' | tr -d '\t' | ruby -pe 'gsub(/&#[xX]([0-9a-fA-F]+);/) { [$1.to_i(16)].pack("U") }';)
+TEMP_HI=($(echo "$WEATHER_TODAY" | grep -A2 '<div class="temperatures">' | grep 'span class' | sed -e 's/<[^>]*>//g' |  tr -d '\t' | ruby -pe 'gsub(/&#[xX]([0-9a-fA-F]+);/) { [$1.to_i(16)].pack("U") }';))
+TEMP_C=$(echo "$DATA_NOW" | grep -m1 '<div class="temp">' | sed -e 's/<[^>]*>//g' |  tr -d '\t')
+TEMP_T=($(echo "$WEATHER_TOMORROW" | grep -A2 '<div class="temperatures">' | grep 'span class' | sed -e 's/<[^>]*>//g' |  tr -d '\t' | ruby -pe 'gsub(/&#[xX]([0-9a-fA-F]+);/) { [$1.to_i(16)].pack("U") }';))
+PHRASE_C=$(echo "$DATA_NOW" | grep '<span class="phrase">' | sed -e 's/<[^>]*>//g' |  tr -d '\t')
+PHRASE_T=$(echo "$WEATHER_TOMORROW" | grep -m1 '<div class="phrase">' | sed -e 's/<[^>]*>//g' |  tr -d '\t' | ruby -pe 'gsub(/&#[xX]([0-9a-fA-F]+);/) { [$1.to_i(16)].pack("U") }';)
+PHRASE=($(echo "$WEATHER_TODAY" | grep '<div class="phrase">' | sed -e 's/<[^>]*>//g' |  tr -d '\t' | ruby -pe 'gsub(/&#[xX]([0-9a-fA-F]+);/) { [$1.to_i(16)].pack("U") }';))
+ICON_NO=($(printf "%02d\n" $(echo "$WEATHER_TODAY" | grep 'class="weather-icon icon"'  | awk -F'weathericons/' '{print $2}' | cut -f 1 -d ".")))
+ICON_CUR=$(printf "%02d" $(echo "$DATA_CUR" | grep 'class="weather-icon"' | awk -F'weathericons/' '{print $2}' | cut -f 1 -d "."))
+ICON_T=$(printf "%02d" $(echo "$WEATHER_TOMORROW" |  grep -m1 'class="weather-icon icon"' | awk -F'weathericons/' '{print $2}' | cut -f 1 -d "."))
 IFS="$_IFS"
 
 #  現在、日中、夜間、明日の天気を表示して天気アイコンを取得し保存
 if [ $FLG_C -eq 1 ]; then
   echo "\033[0;${COLOR_CP}m"${TITLE[0]}"\033[0m"
-  [ $F_TEMP_C -eq 1 ] && printf "%-5s%-6s  \t%s\n" ${TEMP_HI[0]} ${TEMP_LO[0]} "${PHRASE[0]}"
+  [ $F_TEMP_C -eq 1 ] && printf "%-5s \t%s\n" ${TEMP_HI[0]} "${PHRASE[0]}"
   [ $F_HUM -eq 1 ] && echo ${DATA_CUR[3]}
   [ $F_PRES -eq 1 ] && echo ${DATA_CUR[5]}
   [ $F_CC -eq 1 ] && echo ${DATA_CUR[6]}
   [ $F_UV_C -eq 1 ] && echo ${DATA_CUR[0]}
   for (( m=0; m < $NLF; ++m)); do echo; done
   if [ $F_ICON -eq 1 ]; then
-    echo "https://vortex.accuweather.com/adc2010/images/slate/icons/"${ICON_NO[0]}"-l.png" | xargs curl --silent -o /tmp/weather_current.png
+    echo "https://vortex.accuweather.com/adc2010/images/slate/icons/"$ICON_CUR"-l.png" | xargs curl --silent -o /tmp/weather_current.png
   fi
 fi
 if [ $FLG_D -eq 1 ]; then
   echo "\033[0;${COLOR_CP}m"${TITLE[1]}"\033[0m"
-  [ $F_TEMP_E -eq 1 ] && printf "%-5s%-6s  \t%s\n" ${TEMP_HI[1]} ${TEMP_LO[1]} "${PHRASE[1]}"
-  [ $F_PROB -eq 1 ] && echo ${DATA_TODAY_DAY[3]}
-  [ $F_PRECIP -eq 1 ] && echo ${DATA_TODAY_DAY[5]}
-  [ $F_SNOW -eq 1 ] && echo ${DATA_TODAY_DAY[7]}
-  [ $F_UV -eq 1 ] && echo ${DATA_TODAY_DAY[0]}
+  [ $F_TEMP_E -eq 1 ] && printf "%-5s \t%s\n" ${TEMP_HI[1]} "${PHRASE[1]}"
+  [ $F_PROB -eq 1 ] && echo ${DATA_TODAY_DAY[3]}" \t" | tr -d '\n'
+  [ $F_PRECIP -eq 1 ] && echo ${DATA_TODAY_DAY[5]}" \t" | tr -d '\n'
+  [ $F_SNOW -eq 1 ] && echo ${DATA_TODAY_DAY[7]}" \t" | tr -d '\n'
+  [ $F_UV -eq 1 ] && echo ${DATA_TODAY_DAY[0]}" \t" | tr -d '\n'
+  echo
   for (( m=0; m < $NLF; ++m)); do echo; done
   if [ $F_ICON -eq 1 ]; then
     echo "https://vortex.accuweather.com/adc2010/images/slate/icons/"${ICON_NO[1]}"-l.png" | xargs curl --silent -o /tmp/weather_today.png
@@ -85,25 +92,27 @@ if [ $FLG_D -eq 1 ]; then
 fi
 if [ $FLG_N -eq 1 ]; then
   echo "\033[0;${COLOR_CP}m"${TITLE[2]}"\033[0m"
-  [ $F_TEMP_E -eq 1 ] && printf "%-5s%-6s  \t%s\n" ${TEMP_HI[2]} ${TEMP_LO[2]} "${PHRASE[2]}"
-  [ $F_PROB -eq 1 ] && echo ${DATA_TODAY_NIT[2]}
-  [ $F_PRECIP -eq 1 ] && echo ${DATA_TODAY_NIT[4]}
-  [ $F_SNOW -eq 1 ] && echo ${DATA_TODAY_NIT[6]}
-  [ $F_UV -eq 1 ] && echo
+  [ $F_TEMP_E -eq 1 ] && printf "%-5s  \t%s\n" ${TEMP_HI[2]} "${PHRASE[2]}"
+  [ $F_PROB -eq 1 ] && echo ${DATA_TODAY_NIT[2]}" \t" | tr -d '\n'
+  [ $F_PRECIP -eq 1 ] && echo ${DATA_TODAY_NIT[4]}" \t" | tr -d '\n'
+  [ $F_SNOW -eq 1 ] && echo ${DATA_TODAY_NIT[6]}" \t" | tr -d '\n'
+  [ $F_UV -eq 1 ] && echo | tr -d '\n'
+  echo
   for (( m=0; m < $NLF; ++m)); do echo; done
   if [ $F_ICON -eq 1 ]; then
     echo "https://vortex.accuweather.com/adc2010/images/slate/icons/"${ICON_NO[2]}"-l.png" | xargs curl --silent -o /tmp/weather_tonight.png
   fi
 fi
 if [ $FLG_T -eq 1 ]; then
-  echo "\033[0;${COLOR_CP}m"${TITLE[3]}"\033[0m"
-  [ $F_TEMP_E -eq 1 ] && printf "%-5s%-6s  \t%s\n" ${TEMP_HI[3]} "${TEMP_LO[3]}" "${PHRASE[3]}"
-  [ $F_PROB -eq 1 ] && echo ${DATA_TOMORROW[3]}
-  [ $F_PRECIP -eq 1 ] && echo ${DATA_TOMORROW[5]}
-  [ $F_SNOW -eq 1 ] && echo ${DATA_TOMORROW[7]}
-  [ $F_UV -eq 1 ] && echo ${DATA_TOMORROW[0]}
+  echo "\033[0;${COLOR_CP}m"$TITLE_TOMORROW"\033[0m"
+  [ $F_TEMP_E -eq 1 ] && printf "%-5s / %-5s  \t%s\n" ${TEMP_T[0]} "${TEMP_T[1]}" "$PHRASE_T"
+  [ $F_PROB -eq 1 ] && echo ${DATA_TOMORROW[3]}" \t" | tr -d '\n'
+  [ $F_PRECIP -eq 1 ] && echo ${DATA_TOMORROW[5]}" \t" | tr -d '\n'
+  [ $F_SNOW -eq 1 ] && echo ${DATA_TOMORROW[7]}" \t" | tr -d '\n'
+  [ $F_UV -eq 1 ] && echo ${DATA_TOMORROW[0]} | tr -d '\n'
+  echo
   if [ $F_ICON -eq 1 ]; then
-    echo "https://vortex.accuweather.com/adc2010/images/slate/icons/"${ICON_NO[3]}"-l.png" | xargs curl --silent -o /tmp/weather_tomorrow.png
+    echo "https://vortex.accuweather.com/adc2010/images/slate/icons/"$ICON_T"-l.png" | xargs curl --silent -o /tmp/weather_tomorrow.png
   fi
 fi
 

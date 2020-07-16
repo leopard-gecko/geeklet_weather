@@ -18,15 +18,15 @@ WEATHER_URL=${WEATHER_URL:='https://www.accuweather.com/en/jp/koto-ku/221230/wea
 # 元データ取得
 USER_AGENT='Mozilla/5.0 (Macintosh; Intel Mac OS X)'
 WEATHER_DATA=$(curl -A "$USER_AGENT" --silent $WEATHER_URL)
-DATA_CUR=$(echo "$WEATHER_DATA" | grep -A30 'panel panel-fade-in card current' | ruby -pe 'gsub(/&amp;#[xX]([0-9a-fA-F]+);/) { [$1.to_i(16)].pack("U") }')
+DATA_CUR=$(echo "$WEATHER_DATA" | grep -A42 'cur-con-weather-card card-module' | ruby -pe 'gsub(/&amp;#[xX]([0-9a-fA-F]+);/) { [$1.to_i(16)].pack("U") }')
 
 # 現在の温度と天気を取得して表示
-TEMP=$(echo "$DATA_CUR" | grep -A1 '&lt;span class="high"&gt;' | sed -n 2p)
-PHRASE=$(echo "$DATA_CUR" | grep -A1 '&lt;div class="cond"&gt;' | sed -n 2p)
+TEMP=$(echo "$DATA_CUR" | grep '&lt;div class="temp"&gt;' | sed -e 's/&lt;[^&gt;]*&gt;//g' |  tr -d '\t')
+PHRASE=$(echo "$DATA_CUR" | grep '&lt;span class="phrase"&gt;' | sed -e 's/&lt;[^&gt;]*&gt;//g' |  tr -d '\t')
 echo $TEMP $PHRASE
 
 # 天気アイコンのナンバーを取得し画像を保存
-ICON_CUR=$(printf "%02d" $(echo "$DATA_CUR" | grep 'class="weather-icon icon"' | awk -F'weathericons/' '{print $2}' | cut -f 1 -d "."))
+ICON_CUR=$(printf "%02d" $(echo "$DATA_CUR" | grep 'class="weather-icon"' | awk -F'weathericons/' '{print $2}' | cut -f 1 -d "."))
 echo "https://vortex.accuweather.com/adc2010/images/icons-numbered/"$ICON_CUR"-xl.png" | xargs curl --silent -o /tmp/weather_now.png
 
 # シンプルなデザインの天気アイコンを使いたい場合はこれに書き換える
@@ -37,10 +37,7 @@ osascript &lt;&lt;EOT
   tell application "GeekTool Helper"
     tell image geeklets to refresh
   end tell
-EOT
-</string>
-	<key>DisplayID</key>
-	<integer>1892209153</integer>
+EOT</string>
 	<key>DisplayStatusImage</key>
 	<false/>
 	<key>DropShadow</key>

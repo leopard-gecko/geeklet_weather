@@ -16,14 +16,12 @@ COLOR_CP='40;37'
 # 元データ取得
 USER_AGENT='Mozilla/5.0 (Macintosh; Intel Mac OS X)'
 WEATHER_DATA=$(curl -A "$USER_AGENT" --silent $WEATHER_URL)
-LA_DATA=$(echo "$WEATHER_DATA" | grep -A5 '&lt;div class="forecast-summary-header"&gt;' | tr -d '\t' | ruby -pe 'gsub(/&amp;#[xX]([0-9a-fA-F]+);/) { [$1.to_i(16)].pack("U") }')
-LOCALE_LA=$(echo "$LA_DATA" | grep -A1 '&lt;div class="forecast-summary-header"&gt;' | sed -n 2p)
+LA_DATA=$(echo "$WEATHER_DATA" | grep -A7 'inline-cta-banner looking-ahead' | tr -d '\t')
+LOCALE_LA=$(echo "$LA_DATA" | grep -A1 'banner-header' | sed -n 2p)
 
 # Looking aheadを取得して表示
 [ -n "$LOCALE_LA" ] &amp;&amp; echo $(printf "\033[0;${COLOR_CP}m")$LOCALE_LA:$(printf "\033[0m") 
-echo "$LA_DATA" | grep -A1 '&lt;div class="forecast-summary-text"&gt;' | sed -n 2p</string>
-	<key>DisplayID</key>
-	<integer>1892209153</integer>
+echo "$LA_DATA" | grep -A1 'banner-text' | sed -n 2p</string>
 	<key>DropShadow</key>
 	<false/>
 	<key>FailureImage</key>

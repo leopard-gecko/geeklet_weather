@@ -44,26 +44,26 @@ fi
 # 元データ取得（日曜日の場合は翌週の週末を取得する）
 USER_AGENT='Mozilla/5.0 (Macintosh; Intel Mac OS X)'
 WEATHER_DATA=$(curl -A "$USER_AGENT" --silent ${WEATHER_URL/weather-forecast/daily-weather-forecast})
-DATA_WEEK_RAW=$(echo "$WEATHER_DATA" | grep -A27 'forecast-list-card forecast-card' | ruby -pe 'gsub(/&amp;#[xX]([0-9a-fA-F]+);/) { [$1.to_i(16)].pack("U") }' | tr -d '\t')
+DATA_WEEK_RAW=$(echo "$WEATHER_DATA" | grep -A20 'class="daily-forecast-card' | ruby -pe 'gsub(/&amp;#[xX]([0-9a-fA-F]+);/) { [$1.to_i(16)].pack("U") }' | tr -d '\t')
 _IFS="$IFS";IFS='^'
 DATA_WEEK=($(echo "$DATA_WEEK_RAW" | sed s/--/^/g))
 IFS="$_IFS"
-LOCALE_SAT=$(echo "$DATA_WEEK_RAW" | grep -A4 "?day=$(expr 6 - $(date +%w) + 1)\"" | sed -n '5p')
-LOCALE_SUN=$(echo "$DATA_WEEK_RAW" | grep -A4 "?day=$(expr 7 - $(date +%w) + 1)\"" | sed -n '5p')
-LOCALE_PRECIP=$(echo "$DATA_WEEK_RAW" | grep -A2 '&lt;div class="info precip"&gt;' | sed -n 3p)
+LOCALE_SAT=$(echo "$DATA_WEEK_RAW" | grep -A4 "?day=$(expr 6 - $(date +%w) + 1)\"" | grep 'dow date' | sed -e 's/&lt;[^&gt;]*&gt;//g')
+LOCALE_SUN=$(echo "$DATA_WEEK_RAW" | grep -A4 "?day=$(expr 7 - $(date +%w) + 1)\"" | grep 'dow date' | sed -e 's/&lt;[^&gt;]*&gt;//g')
+LOCALE_PRECIP='☂️'
 
 # 日付、曜日、最高・最低気温、降水確率、天気を表示
 for (( i = 0; i &lt; $NUM_L; ++i ))
 do
   HI[$i]=$(echo "${DATA_WEEK[$(expr $i + $AFTER)]}" | grep '&lt;span class="high"&gt;' | sed -e 's/&lt;[^&gt;]*&gt;//g')
   LO[$i]=$(echo "${DATA_WEEK[$(expr $i + $AFTER)]}" | grep '&lt;span class="low"&gt;' | sed -e 's/&lt;[^&gt;]*&gt;//g')
-  DATE[$i]=$(echo "${DATA_WEEK[$(expr $i + $AFTER)]}" | grep -A1 '&lt;p class="sub"&gt;' | grep -v '&lt;p class="sub"&gt;')
-  DOW[$i]=$(echo "${DATA_WEEK[$(expr $i + $AFTER)]}" | grep -A1 '&lt;p class="dow"&gt;' | grep -v '&lt;p class="dow"&gt;' | sed -E s/$LOCALE_SAT/$(printf "\033[0;${COLOR_SAT}m")\&amp;/ | sed -E s/$LOCALE_SUN/$(printf "\033[0;${COLOR_SUN}m")\&amp;/ | sed -E 's/$/'$(printf "\033[0m")'/')
-  PRECIP[$i]=$(echo "${DATA_WEEK[$(expr $i + $AFTER)]}" | grep -A4 '&lt;div class="info precip"&gt;' | sed -n '5p' | sed -e 's/&lt;[^&gt;]*&gt;//g')
-  PHRASE[$i]=$(echo "${DATA_WEEK[$(expr $i + $AFTER)]}" | grep -A1 '&lt;span class="phrase"&gt;' | grep -v '&lt;span class="phrase"&gt;')
+  DATE[$i]=$(echo "${DATA_WEEK[$(expr $i + $AFTER)]}" | grep 'sub date' | sed -e 's/&lt;[^&gt;]*&gt;//g')
+  DOW[$i]=$(echo "${DATA_WEEK[$(expr $i + $AFTER)]}" | grep 'dow date' | sed -e 's/&lt;[^&gt;]*&gt;//g' | sed -E s/$LOCALE_SAT/$(printf "\033[0;${COLOR_SAT}m")\&amp;/ | sed -E s/$LOCALE_SUN/$(printf "\033[0;${COLOR_SUN}m")\&amp;/ | sed -E 's/$/'$(printf "\033[0m")'/')
+  PRECIP[$i]=$(echo "${DATA_WEEK[$(expr $i + $AFTER)]}" | grep -A2 '&lt;div class="precip"&gt;' | sed -n '3p')
+  PHRASE[$i]=$(echo "${DATA_WEEK[$(expr $i + $AFTER)]}" | grep -A1 '&lt;div class="phrase"&gt;' | grep -v '&lt;div class="phrase"&gt;')
   [ $F_DATE -eq 1 ] &amp;&amp; printf "\033[0;${COLOR_DATE}m%5s\033[0m\t" "${DATE[$i]}"
   [ $F_DOW -eq 1 ] &amp;&amp; echo ${DOW[$i]}
-  [ $F_TEMP_PHRASE -eq 1 ] &amp;&amp; printf "%-4s%-6s  \t%s\n" ${HI[$i]} "${LO[$i]}" "${PHRASE[$i]}"
+  [ $F_TEMP_PHRASE -eq 1 ] &amp;&amp; printf "%-5s%-6s  \t%4s\n" ${HI[$i]} "${LO[$i]}" "${PHRASE[$i]}"
   [ $F_PRECIP -eq 1 ] &amp;&amp; echo $LOCALE_PRECIP: ${PRECIP[$i]}
   for (( m=0; m &lt; $NLF; ++m)); do echo; done
 done
@@ -72,7 +72,7 @@ done
 if [ $F_ICON -eq 1 ]; then
   for (( i = 0; i &lt; $NUM_L; ++i ))
   do
-  ICON_WEEK[$i]=$(printf "%02d" $(echo "${DATA_WEEK[$(expr $i + $AFTER)]}" | grep 'class="weather-icon icon "' | awk -F'weathericons/' '{print $2}' | cut -f 1 -d "." ))
+  ICON_WEEK[$i]=$(printf "%02d" $(echo "${DATA_WEEK[$(expr $i + $AFTER)]}" | grep 'class="weather-icon icon"' | awk -F'weathericons/' '{print $2}' | cut -f 1 -d "." ))
   echo "https://vortex.accuweather.com/adc2010/images/slate/icons/"${ICON_WEEK[$i]}"-l.png" | xargs curl --silent -o /tmp/weather_week_$(($i)).png
   done
 fi
@@ -85,7 +85,7 @@ osascript &lt;&lt;EOT
 EOT
 </string>
 	<key>DisplayID</key>
-	<integer>1892209153</integer>
+	<integer>69927160</integer>
 	<key>DisplayStatusImage</key>
 	<false/>
 	<key>DropShadow</key>
@@ -136,7 +136,7 @@ EOT
 	<key>FontSize</key>
 	<real>16</real>
 	<key>GeekletFrame</key>
-	<string>{{490.68359375, 474}, {240, 560}}</string>
+	<string>{{490.68359375, 474}, {350, 560}}</string>
 	<key>HasShadow</key>
 	<false/>
 	<key>Identifier</key>
