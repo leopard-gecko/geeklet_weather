@@ -54,9 +54,6 @@ mystrln() {
   printf -v $4 "%d" $(($mb+$2))
 } 
 
-# データ整理用関数
-
-
 # データ表示用関数
 display_data() {
   mystr=$(echo "$1" | perl -C -MEncode -pe 's/&#x([0-9A-F]{2,4});/chr(hex($1))/ge')
