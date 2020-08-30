@@ -92,8 +92,8 @@ _IFS="$IFS";IFS=$'\n'
 HOUR_TIME=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A1 'class="date"' | grep 'span' | sed -e 's/<span>//g' -e 's/<\/span>//g'))
 HOUR_TEMP=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A1 '<div class="temp metric">' | grep -v '<div class="temp metric">' | grep -v '\-\-' | cut -d\& -f1 | sed -E s/$/$JFNT/))
 HOUR_PRECIP=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A2 '<div class="precip">' | grep \% | grep -v '\-\-'))
-HOUR_RAIN=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A40 '<div class="panel left">' | grep -E -A1 "$LOCALE_RAIN|<div class=\"panel left\">" | grep -E "<div class=\"panel left\">|value" | tr -d '\t' | perl -0pe 's/<div class="panel left">[\n ]+<span class="value">//g' | sed -e 's/<[^>]*>/ /g'))
-HOUR_WIND=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A1 "$LOCALE_WIND$" | grep '<span class="value"' | sed -e 's/<[^>]*>//g' | tr -d '\t'))
+HOUR_RAIN=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -e '<div class="hourly-content-container">' -e ">$LOCALE_RAIN<" | tr -d '\t' | tr -d '\n' | perl -pe 's/<div class="hourly-content-container">/\n /g' | sed '1d' | sed "s/$LOCALE_RAIN//g" | sed -e 's/<[^>]*>//g'))
+HOUR_WIND=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep "$LOCALE_WIND<" | sed -e 's/<[^>]*>//g' | tr -d '\t' | sed -e "s/$LOCALE_WIND//g"))
 HOUR_PHRASE=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A1 '<span class="phrase">' | grep -v '<span class="phrase">' | grep -v '\-\-'))
 IFS="$_IFS"
 

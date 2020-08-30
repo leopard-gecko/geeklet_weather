@@ -59,9 +59,6 @@ mystrln() {
   printf -v $4 "%d" $(($mb+$2))
 } 
 
-# データ整理用関数
-
-
 # データ表示用関数
 display_data() {
   mystr=$(echo "$1" | perl -C -MEncode -pe 's/&amp;#x([0-9A-F]{2,4});/chr(hex($1))/ge')
@@ -100,8 +97,8 @@ _IFS="$IFS";IFS=$'\n'
 HOUR_TIME=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A1 'class="date"' | grep 'span' | sed -e 's/&lt;span&gt;//g' -e 's/&lt;\/span&gt;//g'))
 HOUR_TEMP=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A1 '&lt;div class="temp metric"&gt;' | grep -v '&lt;div class="temp metric"&gt;' | grep -v '\-\-' | cut -d\&amp; -f1 | sed -E s/$/$JFNT/))
 HOUR_PRECIP=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A2 '&lt;div class="precip"&gt;' | grep \% | grep -v '\-\-'))
-HOUR_RAIN=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A40 '&lt;div class="panel left"&gt;' | grep -E -A1 "$LOCALE_RAIN|&lt;div class=\"panel left\"&gt;" | grep -E "&lt;div class=\"panel left\"&gt;|value" | tr -d '\t' | perl -0pe 's/&lt;div class="panel left"&gt;[\n ]+&lt;span class="value"&gt;//g' | sed -e 's/&lt;[^&gt;]*&gt;/ /g'))
-HOUR_WIND=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A1 "$LOCALE_WIND$" | grep '&lt;span class="value"' | sed -e 's/&lt;[^&gt;]*&gt;//g' | tr -d '\t'))
+HOUR_RAIN=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -e '&lt;div class="hourly-content-container"&gt;' -e "&gt;$LOCALE_RAIN&lt;" | tr -d '\t' | tr -d '\n' | perl -pe 's/&lt;div class="hourly-content-container"&gt;/\n /g' | sed '1d' | sed "s/$LOCALE_RAIN//g" | sed -e 's/&lt;[^&gt;]*&gt;//g'))
+HOUR_WIND=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep "$LOCALE_WIND&lt;" | sed -e 's/&lt;[^&gt;]*&gt;//g' | tr -d '\t' | sed -e "s/$LOCALE_WIND//g"))
 HOUR_PHRASE=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A1 '&lt;span class="phrase"&gt;' | grep -v '&lt;span class="phrase"&gt;' | grep -v '\-\-'))
 IFS="$_IFS"
 
@@ -166,8 +163,6 @@ osascript &lt;&lt;EOT
     tell image geeklets to refresh
   end tell
 EOT</string>
-	<key>DisplayID</key>
-	<integer>69927160</integer>
 	<key>DropShadow</key>
 	<false/>
 	<key>FailureImage</key>
