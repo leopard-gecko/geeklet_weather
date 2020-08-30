@@ -28,7 +28,7 @@ F_TEMP=1
 F_PRECIP=1
 F_RAIN=1
 F_WIND=1
-F_PHRASE=1
+F_PHRASE=0
 # 天気アイコンを取得する？（1 取得する、0 取得しない）
 F_ICON=1
 # AMとPMの色  30 黒、31 赤、32 緑、33 黄、34 青、35 マゼンタ、36 シアン、37 白、0 デフォルト
@@ -163,6 +163,8 @@ osascript &lt;&lt;EOT
     tell image geeklets to refresh
   end tell
 EOT</string>
+	<key>DisplayID</key>
+	<integer>69927160</integer>
 	<key>DropShadow</key>
 	<false/>
 	<key>FailureImage</key>
@@ -211,7 +213,7 @@ EOT</string>
 	<key>FontSize</key>
 	<real>13</real>
 	<key>GeekletFrame</key>
-	<string>{{20, 635}, {756, 390.84375}}</string>
+	<string>{{20, 635}, {756, 391}}</string>
 	<key>HasShadow</key>
 	<false/>
 	<key>Identifier</key>
