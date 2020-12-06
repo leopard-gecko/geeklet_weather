@@ -45,7 +45,7 @@ WEATHER_TODAY="$(curl -A "$USER_AGENT" --silent ${WEATHER_URL/weather-forecast/c
 WEATHER_TOMORROW="$(curl -A "$USER_AGENT" --silent "${WEATHER_URL/weather-forecast/daily-weather-forecast}?day=2")"
 DATA_NOW="$(echo "$WEATHER_DATA" | awk '/glacier-ad top content-module/,/connatix/' | tr -d '\t' | char_conv)"
 _IFS="$IFS";IFS='^'
-DATA_TODAY=($(pickup_data_1 "$WEATHER_TODAY" 'half-day-card content-module' '&lt;div class="quarter-day-ctas"&gt;'))
+DATA_TODAY=($(pickup_data_1 "$WEATHER_TODAY" 'half-day-card content-module' '&lt;div class="quarter-day-ctas"&gt;' | sed -e 's/&lt;div class="quarter-day-ctas"&gt;/^/g'))
 DATA_TOMORROW=($(pickup_data_1 "$WEATHER_TOMORROW" 'half-day-card content-module' '&lt;div class="quarter-day-ctas"&gt;'))
 F_N=0
 if [ ${#DATA_TODAY[@]} -eq 1 ]; then
@@ -56,9 +56,9 @@ fi
 IFS="$_IFS"
 _IFS="$IFS";IFS=$'\n'
 DATA_C=($(echo "$WEATHER_TODAY" | grep -A2 '&lt;div class="detail-item spaced-content"&gt;' | grep -e '&lt;div&gt;' -e '--' | tr -d '\t' | perl -pe 's/\n//g' | sed 's/&lt;\/div&gt;&lt;div&gt;/: /g' | sed -e 's/&lt;[^&gt;]*&gt;//g' | perl -pe 's/--/\n/g' | char_conv))
-DATA_D=($(echo "${DATA_TODAY[0]}" | grep '&lt;p&gt;' | sed -e 's/&lt;span class=\"value\"&gt;/: /g' -e 's/&lt;[^&gt;]*&gt;//g' | char_conv))
-DATA_N=($(echo "${DATA_TODAY[1]}" | grep '&lt;p&gt;' | sed -e 's/&lt;span class=\"value\"&gt;/: /g' -e 's/&lt;[^&gt;]*&gt;//g' | char_conv))
-DATA_T=($(echo "${DATA_TOMORROW[0]}" | grep '&lt;p&gt;' | sed -e 's/&lt;span class=\"value\"&gt;/: /g' -e 's/&lt;[^&gt;]*&gt;//g' | char_conv))
+DATA_D=($(echo "${DATA_TODAY[0]}" | grep '&lt;p class="panel-item"&gt;' | sed -e 's/&lt;span class=\"value\"&gt;/: /g' -e 's/&lt;[^&gt;]*&gt;//g' | char_conv))
+DATA_N=($(echo "${DATA_TODAY[1]}" | grep '&lt;p class="panel-item"&gt;' | sed -e 's/&lt;span class=\"value\"&gt;/: /g' -e 's/&lt;[^&gt;]*&gt;//g' | char_conv))
+DATA_T=($(echo "${DATA_TOMORROW[0]}" | grep '&lt;p class="panel-item"&gt;' | sed -e 's/&lt;span class=\"value\"&gt;/: /g' -e 's/&lt;[^&gt;]*&gt;//g' | char_conv))
 IFS="$_IFS"
 
 # 各データ取得
@@ -141,6 +141,8 @@ osascript &lt;&lt;EOT
     tell image geeklets to refresh
   end tell
 EOT</string>
+	<key>DisplayID</key>
+	<integer>69927160</integer>
 	<key>DropShadow</key>
 	<false/>
 	<key>FailureImage</key>
@@ -191,7 +193,7 @@ EOT</string>
 	<key>ForceCR</key>
 	<false/>
 	<key>GeekletFrame</key>
-	<string>{{140, 400}, {400, 357}}</string>
+	<string>{{140, 400}, {608.551025390625, 374.1097412109375}}</string>
 	<key>HasShadow</key>
 	<false/>
 	<key>Identifier</key>

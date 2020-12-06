@@ -40,7 +40,7 @@ WEATHER_TODAY="$(curl -A "$USER_AGENT" --silent ${WEATHER_URL/weather-forecast/c
 WEATHER_TOMORROW="$(curl -A "$USER_AGENT" --silent "${WEATHER_URL/weather-forecast/daily-weather-forecast}?day=2")"
 DATA_NOW="$(echo "$WEATHER_DATA" | awk '/glacier-ad top content-module/,/connatix/' | tr -d '\t' | char_conv)"
 _IFS="$IFS";IFS='^'
-DATA_TODAY=($(pickup_data_1 "$WEATHER_TODAY" 'half-day-card content-module' '<div class="quarter-day-ctas">'))
+DATA_TODAY=($(pickup_data_1 "$WEATHER_TODAY" 'half-day-card content-module' '<div class="quarter-day-ctas">' | sed -e 's/<div class="quarter-day-ctas">/^/g'))
 DATA_TOMORROW=($(pickup_data_1 "$WEATHER_TOMORROW" 'half-day-card content-module' '<div class="quarter-day-ctas">'))
 F_N=0
 if [ ${#DATA_TODAY[@]} -eq 1 ]; then
@@ -51,9 +51,9 @@ fi
 IFS="$_IFS"
 _IFS="$IFS";IFS=$'\n'
 DATA_C=($(echo "$WEATHER_TODAY" | grep -A2 '<div class="detail-item spaced-content">' | grep -e '<div>' -e '--' | tr -d '\t' | perl -pe 's/\n//g' | sed 's/<\/div><div>/: /g' | sed -e 's/<[^>]*>//g' | perl -pe 's/--/\n/g' | char_conv))
-DATA_D=($(echo "${DATA_TODAY[0]}" | grep '<p>' | sed -e 's/<span class=\"value\">/: /g' -e 's/<[^>]*>//g' | char_conv))
-DATA_N=($(echo "${DATA_TODAY[1]}" | grep '<p>' | sed -e 's/<span class=\"value\">/: /g' -e 's/<[^>]*>//g' | char_conv))
-DATA_T=($(echo "${DATA_TOMORROW[0]}" | grep '<p>' | sed -e 's/<span class=\"value\">/: /g' -e 's/<[^>]*>//g' | char_conv))
+DATA_D=($(echo "${DATA_TODAY[0]}" | grep '<p class="panel-item">' | sed -e 's/<span class=\"value\">/: /g' -e 's/<[^>]*>//g' | char_conv))
+DATA_N=($(echo "${DATA_TODAY[1]}" | grep '<p class="panel-item">' | sed -e 's/<span class=\"value\">/: /g' -e 's/<[^>]*>//g' | char_conv))
+DATA_T=($(echo "${DATA_TOMORROW[0]}" | grep '<p class="panel-item">' | sed -e 's/<span class=\"value\">/: /g' -e 's/<[^>]*>//g' | char_conv))
 IFS="$_IFS"
 
 # 各データ取得
