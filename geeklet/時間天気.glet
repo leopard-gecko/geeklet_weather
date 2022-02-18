@@ -94,12 +94,12 @@ fi
 
 # 時刻・気温・降水確率・雨量・風速・天気を配列変数として取得
 _IFS="$IFS";IFS=$'\n'
-HOUR_TIME=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A1 'class="date"' | grep 'span' | sed -e 's/&lt;span&gt;//g' -e 's/&lt;\/span&gt;//g'))
-HOUR_TEMP=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A1 '&lt;div class="temp metric"&gt;' | grep -v '&lt;div class="temp metric"&gt;' | grep -v '\-\-' | cut -d\&amp; -f1 | sed -E s/$/$JFNT/))
+HOUR_TIME=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep 'class="date"' | grep 'span' | sed -e 's/&lt;span&gt;//g' -e 's/&lt;\/span&gt;//g' | sed -e 's/&lt;[^&gt;]*&gt;//g'))
+HOUR_TEMP=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep 'class="temp metric"'| sed -e 's/&lt;[^&gt;]*&gt;//g' | cut -d\&amp; -f1 | sed -E s/$/$JFNT/))
 HOUR_PRECIP=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A2 '&lt;div class="precip"&gt;' | grep \% | grep -v '\-\-'))
 HOUR_RAIN=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -e '&lt;div class="hourly-content-container"&gt;' -e "&gt;$LOCALE_RAIN&lt;" | tr -d '\t' | tr -d '\n' | perl -pe 's/&lt;div class="hourly-content-container"&gt;/\n /g' | sed '1d' | sed "s/$LOCALE_RAIN//g" | sed -e 's/&lt;[^&gt;]*&gt;//g'))
 HOUR_WIND=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep "$LOCALE_WIND&lt;" | sed -e 's/&lt;[^&gt;]*&gt;//g' | tr -d '\t' | sed -e "s/$LOCALE_WIND//g"))
-HOUR_PHRASE=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A1 '&lt;span class="phrase"&gt;' | grep -v '&lt;span class="phrase"&gt;' | grep -v '\-\-'))
+HOUR_PHRASE=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep '&lt;div class="phrase"&gt;' | sed -e 's/&lt;[^&gt;]*&gt;//g' | grep -v '\-\-'))
 IFS="$_IFS"
 
 # 天気アイコンのナンバーをゼロパディングし配列変数として取得
@@ -162,9 +162,8 @@ osascript &lt;&lt;EOT
   tell application "GeekTool Helper"
     tell image geeklets to refresh
   end tell
-EOT</string>
-	<key>DisplayID</key>
-	<integer>69927160</integer>
+EOT
+</string>
 	<key>DropShadow</key>
 	<false/>
 	<key>FailureImage</key>
