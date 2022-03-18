@@ -72,7 +72,7 @@ done
 if [ $F_ICON -eq 1 ]; then
   for (( i = 0; i &lt; $NUM_L; ++i ))
   do
-  ICON_WEEK[$i]=$(printf "%02d" $(echo "${DATA_WEEK[$(expr $i + $AFTER)]}" | grep 'class="weather-icon icon"' | awk -F'weathericons/' '{print $2}' | cut -f 1 -d "." ))
+  ICON_WEEK[$i]=$(printf "%02d" $(echo "${DATA_WEEK[$(expr $i + $AFTER)]}" | grep 'svg class="icon' | awk -F'weathericons/' '{print $2}' | cut -f 1 -d "." ))
   echo "https://vortex.accuweather.com/adc2010/images/slate/icons/"${ICON_WEEK[$i]}"-l.png" | xargs curl --silent -o /tmp/weather_week_$(($i)).png
   done
 fi
