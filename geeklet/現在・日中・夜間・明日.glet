@@ -67,7 +67,7 @@ TITLE_D=$(echo "${DATA_TODAY[0]}" | grep '&lt;h2 class="title"&gt;' | sed -e 's/
 TITLE_N=$(echo "${DATA_TODAY[1]}" | grep '&lt;h2 class="title"&gt;' | sed -e 's/&lt;[^&gt;]*&gt;//g' | char_conv)
 TITLE_T=$(echo "$WEATHER_DATA" | grep -A2 '?day=2' | grep -A1 'card-header' | grep -v 'card-header' | sed -e 's/&lt;[^&gt;]*&gt;//g' | tr -d '\t' | char_conv)
 TEMP_C=$(echo "$WEATHER_TODAY" | grep 'div class="display-temp"' | sed -e 's/&lt;[^&gt;]*&gt;//g' | tr -d '\t' | char_conv)
-TEMP_D=$(echo "${DATA_TODAY[0]}" | grep -A1 'temperature' | grep -v 'temperature' | sed -e 's/&lt;[^&gt;]*&gt;//g' | char_conv)
+TEMP_D=$(echo "${DATA_TODAY[0]}" | grep -A1 'temperature' | grep -v 'temperature' | sed -e 's/&lt;[^&gt;]*&gt;//g' | sed -e 's/--//g' | tr -d '\n' | char_conv)
 TEMP_N=$(echo "${DATA_TODAY[1]}" | grep -A1 'temperature' | grep -v 'temperature' | sed -e 's/&lt;[^&gt;]*&gt;//g' | char_conv)
 _IFS="$IFS";IFS=$'\n'
 TEMP_T=($(echo "$WEATHER_TOMORROW" | grep -A2 '&lt;div class="temperature"&gt;' | grep 'span class' | sed -e 's/&lt;[^&gt;]*&gt;//g' |  tr -d '\t' | char_conv))
