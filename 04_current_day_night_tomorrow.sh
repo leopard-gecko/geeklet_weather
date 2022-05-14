@@ -40,7 +40,7 @@ WEATHER_TODAY="$(curl -A "$USER_AGENT" --silent ${WEATHER_URL/weather-forecast/c
 WEATHER_TOMORROW="$(curl -A "$USER_AGENT" --silent "${WEATHER_URL/weather-forecast/daily-weather-forecast}?day=2")"
 DATA_NOW="$(echo "$WEATHER_DATA" | awk '/glacier-ad top content-module/,/connatix/' | tr -d '\t' | char_conv)"
 _IFS="$IFS";IFS='^'
-DATA_TODAY=($(pickup_data_1 "$WEATHER_TODAY" 'half-day-card content-module' '<div class="quarter-day-ctas">' | sed -e 's/<div class="quarter-day-ctas">/^/g'))
+DATA_TODAY=($(pickup_data_1 "$WEATHER_TODAY" 'half-day-card non-ad content-module' '<div class="quarter-day-ctas">' | sed -e 's/<div class="quarter-day-ctas">/^/g'))
 DATA_TOMORROW=($(pickup_data_1 "$WEATHER_TOMORROW" 'half-day-card content-module' '<div class="quarter-day-ctas">' | sed 's/<div class="quarter-day-ctas">/^/g'))
 F_N=0
 if [ ${#DATA_TODAY[@]} -eq 1 ]; then
