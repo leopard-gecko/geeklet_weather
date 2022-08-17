@@ -38,10 +38,10 @@ USER_AGENT='Mozilla/5.0 (Macintosh; Intel Mac OS X)'
 WEATHER_DATA="$(curl -A "$USER_AGENT" --silent $WEATHER_URL)"
 WEATHER_TODAY="$(curl -A "$USER_AGENT" --silent ${WEATHER_URL/weather-forecast/current-weather})"
 WEATHER_TOMORROW="$(curl -A "$USER_AGENT" --silent "${WEATHER_URL/weather-forecast/daily-weather-forecast}?day=2")"
-DATA_NOW="$(echo "$WEATHER_DATA" | awk '/glacier-ad top content-module/,/connatix/' | tr -d '\t' | char_conv)"
+DATA_CUR=$(echo "$WEATHER_DATA" | grep -A42 'cur-con-weather-card card-module' | ruby -pe 'gsub(/&#[xX]([0-9a-fA-F]+);/) { [$1.to_i(16)].pack("U") }')
 _IFS="$IFS";IFS='^'
-DATA_TODAY=($(pickup_data_1 "$WEATHER_TODAY" 'half-day-card non-ad content-module' '<div class="quarter-day-ctas">' | sed -e 's/<div class="quarter-day-ctas">/^/g'))
-DATA_TOMORROW=($(pickup_data_1 "$WEATHER_TOMORROW" 'half-day-card non-ad content-module' '<div class="quarter-day-ctas">' | sed 's/<div class="quarter-day-ctas">/^/g'))
+DATA_TODAY=($(pickup_data_1 "$WEATHER_TODAY" 'half-day-card ' '<div class="quarter-day-ctas">' | sed -e 's/<div class="quarter-day-ctas">/^/g'))
+DATA_TOMORROW=($(pickup_data_1 "$WEATHER_TOMORROW" 'half-day-card ' '<div class="quarter-day-ctas">' | sed 's/<div class="quarter-day-ctas">/^/g'))
 F_N=0
 if [ ${#DATA_TODAY[@]} -eq 1 ]; then
   DATA_TODAY[1]="${DATA_TODAY[0]}"
@@ -67,7 +67,7 @@ TEMP_N=$(echo "${DATA_TODAY[1]}" | grep -A1 'temperature' | grep -v 'temperature
 _IFS="$IFS";IFS=$'\n'
 TEMP_T=($(echo "$WEATHER_TOMORROW" | grep -A2 '<div class="temperature">' | grep 'span class' | sed -e 's/<[^>]*>//g' |  tr -d '\t' | char_conv))
 IFS="$_IFS"
-PHRASE_C=$(echo "$DATA_NOW" | grep '<span class="phrase">' | sed -e 's/<[^>]*>//g' |  tr -d '\t')
+PHRASE_C=$(echo "$DATA_CUR" | grep '<span class="phrase">' | sed -e 's/<[^>]*>//g' |  tr -d '\t')
 PHRASE_D=$(echo "${DATA_TODAY[0]}" | grep 'phrase' | sed -e 's/<[^>]*>//g' | char_conv)
 PHRASE_N=$(echo "${DATA_TODAY[1]}" | grep 'phrase' | sed -e 's/<[^>]*>//g' | char_conv)
 #PHRASE_T=$(echo "$WEATHER_TOMORROW" | grep -m1 '<div class="phrase">' | sed -e 's/<[^>]*>//g' |  tr -d '\t' | char_conv)
