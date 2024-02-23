@@ -11,10 +11,10 @@ COLOR_CP='0'
 # 元データ取得
 USER_AGENT='Mozilla/5.0 (Macintosh; Intel Mac OS X)'
 WEATHER_DATA=$(curl -A "$USER_AGENT" --silent $WEATHER_URL)
-DATA_MC=$(echo "$WEATHER_DATA" | grep -A7 'minutecast-banner' | tr -d '\t')
+DATA_MC=$(echo "$WEATHER_DATA" | grep -A3 'minutecast-banner content-module')
 
 # MINUTECASTを取得して表示
-TITLE=$(echo "$DATA_MC" | grep -A1 'banner-header' | sed -n 2p)
-PHRASE=$(echo "$DATA_MC" | grep -A1 'banner-text' | sed -n 2p)
+TITLE=$(echo "$DATA_MC" | grep 'minutecast-banner__heading' | sed 's/<[^>]*>//g' | tr -d '\t')
+PHRASE=$(echo "$DATA_MC" | grep 'minutecast-banner__phrase' | sed 's/<[^>]*>//g' | tr -d '\t' | ruby -pe 'gsub(/&#[xX]([0-9a-fA-F]+);/) { [$1.to_i(16)].pack("U") }')
 [ -n "$TITLE" ] && echo $(printf "\033[0;${COLOR_CP}m")"$TITLE:$(printf "\033[0m") $PHRASE"
 #[ -n "$TITLE" ] && echo "$PHRASE"

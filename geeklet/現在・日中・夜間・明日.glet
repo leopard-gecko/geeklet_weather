@@ -42,7 +42,7 @@ pickup_data_1() { echo "$1" | awk /"$2"/,/"$3"/ | sed s/'&lt;div class="half-day
 USER_AGENT='Mozilla/5.0 (Macintosh; Intel Mac OS X)'
 WEATHER_DATA="$(curl -A "$USER_AGENT" --silent $WEATHER_URL)"
 WEATHER_TODAY="$(curl -A "$USER_AGENT" --silent ${WEATHER_URL/weather-forecast/current-weather})"
-WEATHER_TOMORROW="$(curl -A "$USER_AGENT" --silent "${WEATHER_URL/weather-forecast/daily-weather-forecast}?day=2")"
+WEATHER_TOMORROW="$(curl -A "$USER_AGENT" --silent ${WEATHER_URL/weather-forecast/weather-tomorrow})"
 DATA_CUR=$(echo "$WEATHER_DATA" | grep -A42 'cur-con-weather-card card-module' | ruby -pe 'gsub(/&amp;#[xX]([0-9a-fA-F]+);/) { [$1.to_i(16)].pack("U") }')
 _IFS="$IFS";IFS='^'
 DATA_TODAY=($(pickup_data_1 "$WEATHER_TODAY" 'half-day-card ' '&lt;div class="quarter-day-ctas"&gt;' | sed -e 's/&lt;div class="quarter-day-ctas"&gt;/^/g'))
@@ -65,7 +65,7 @@ IFS="$_IFS"
 TITLE_C=$(echo "$WEATHER_TODAY" | grep -A1 'card-header spaced-content' | grep -v 'card-header spaced-content' | perl -pe 's/--\n//g' | sed -e 's/&lt;[^&gt;]*&gt;//g' | tr -d '\t' | char_conv)
 TITLE_D=$(echo "${DATA_TODAY[0]}" | grep '&lt;h2 class="title"&gt;' | sed -e 's/&lt;[^&gt;]*&gt;//g' | char_conv)
 TITLE_N=$(echo "${DATA_TODAY[1]}" | grep '&lt;h2 class="title"&gt;' | sed -e 's/&lt;[^&gt;]*&gt;//g' | char_conv)
-TITLE_T=$(echo "$WEATHER_DATA" | grep -A2 '?day=2' | grep -A1 'card-header' | grep -v 'card-header' | sed -e 's/&lt;[^&gt;]*&gt;//g' | tr -d '\t' | char_conv)
+TITLE_T=$(echo "$WEATHER_DATA" | grep -A2 'weather-tomorrow' | grep 'day' | sed -e 's/&lt;[^&gt;]*&gt;//g' | tr -d '\t' | char_conv)
 TEMP_C=$(echo "$WEATHER_TODAY" | grep 'div class="display-temp"' | sed -e 's/&lt;[^&gt;]*&gt;//g' | tr -d '\t' | char_conv)
 TEMP_D=$(echo "${DATA_TODAY[0]}" | grep -A1 'temperature' | grep -v 'temperature' | sed -e 's/&lt;[^&gt;]*&gt;//g' | sed -e 's/--//g' | tr -d '\n' | char_conv)
 TEMP_N=$(echo "${DATA_TODAY[1]}" | grep -A1 'temperature' | grep -v 'temperature' | sed -e 's/&lt;[^&gt;]*&gt;//g' | sed -e 's/--//g' | tr -d '\n' | char_conv)
@@ -76,7 +76,7 @@ PHRASE_C=$(echo "$DATA_CUR" | grep '&lt;span class="phrase"&gt;' | sed -e 's/&lt
 PHRASE_D=$(echo "${DATA_TODAY[0]}" | grep 'phrase' | sed -e 's/&lt;[^&gt;]*&gt;//g' | char_conv)
 PHRASE_N=$(echo "${DATA_TODAY[1]}" | grep 'phrase' | sed -e 's/&lt;[^&gt;]*&gt;//g' | char_conv)
 #PHRASE_T=$(echo "$WEATHER_TOMORROW" | grep -m1 '&lt;div class="phrase"&gt;' | sed -e 's/&lt;[^&gt;]*&gt;//g' |  tr -d '\t' | char_conv)
-PHRASE_T=$(echo "$WEATHER_DATA" | grep -A16 '?day=2' | grep -m1 'class="phrase"' | sed -e 's/&lt;[^&gt;]*&gt;//g' | tr -d '\t' | char_conv)
+PHRASE_T=$(echo "$WEATHER_DATA" | grep -A16 'weather-tomorrow' | grep -m1 'class="phrase"' | sed -e 's/&lt;[^&gt;]*&gt;//g' | tr -d '\t' | char_conv)
 
 ICON_CUR=$(printf "%02d" $(echo "$WEATHER_TODAY" | grep '<svg class="weather-icon"'  | awk -F'weathericons/' '{print $2}' | cut -f 1 -d "."))
 ICON_D=$(printf "%02d\n" $(echo "${DATA_TODAY[0]}" | grep 'svg class="icon'  | awk -F'weathericons/' '{print $2}' | cut -f 1 -d "."))

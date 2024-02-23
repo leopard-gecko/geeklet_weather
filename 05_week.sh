@@ -39,7 +39,7 @@ fi
 # 元データ取得（日曜日の場合は翌週の週末を取得する）
 USER_AGENT='Mozilla/5.0 (Macintosh; Intel Mac OS X)'
 WEATHER_DATA=$(curl -A "$USER_AGENT" --silent ${WEATHER_URL/weather-forecast/daily-weather-forecast})
-DATA_WEEK_RAW=$(echo "$WEATHER_DATA" | grep -A20 'class="daily-forecast-card' | ruby -pe 'gsub(/&#[xX]([0-9a-fA-F]+);/) { [$1.to_i(16)].pack("U") }' | tr -d '\t')
+DATA_WEEK_RAW=$(echo "$WEATHER_DATA" | grep -A40 'class="daily-forecast-card' | ruby -pe 'gsub(/&#[xX]([0-9a-fA-F]+);/) { [$1.to_i(16)].pack("U") }' | tr -d '\t')
 _IFS="$IFS";IFS='^'
 DATA_WEEK=($(echo "$DATA_WEEK_RAW" | sed s/--/^/g))
 IFS="$_IFS"
@@ -53,9 +53,9 @@ do
   HI[$i]=$(echo "${DATA_WEEK[$(expr $i + $AFTER)]}" | grep '<span class="high">' | sed -e 's/<[^>]*>//g')
   LO[$i]=$(echo "${DATA_WEEK[$(expr $i + $AFTER)]}" | grep '<span class="low">' | sed -e 's/<[^>]*>//g')
   DATE[$i]=$(echo "${DATA_WEEK[$(expr $i + $AFTER)]}" | grep 'sub date' | sed -e 's/<[^>]*>//g')
-  DOW[$i]=$(echo "${DATA_WEEK[$(expr $i + $AFTER)]}" | grep 'dow date' | sed -e 's/<[^>]*>//g' | sed -E s/$LOCALE_SAT/$(printf "\033[0;${COLOR_SAT}m")\&/ | sed -E s/$LOCALE_SUN/$(printf "\033[0;${COLOR_SUN}m")\&/ | sed -E 's/$/'$(printf "\033[0m")'/')
+  DOW[$i]=$(echo "${DATA_WEEK[$(expr $i + $AFTER)]}" | grep 'dow date' | sed -e 's/<[^>]*>//g')
   PRECIP[$i]=$(echo "${DATA_WEEK[$(expr $i + $AFTER)]}" | grep -A2 '<div class="precip">' | sed -n '3p')
-  PHRASE[$i]=$(echo "${DATA_WEEK[$(expr $i + $AFTER)]}" | grep -A1 '<div class="phrase">' | grep -v '<div class="phrase">')
+  PHRASE[$i]=$(echo "${DATA_WEEK[$(expr $i + $AFTER)]}" | grep '<div class="phrase">' | sed -e 's/<[^>]*>//g')
   [ $F_DATE -eq 1 ] && printf "\033[0;${COLOR_DATE}m%5s\033[0m\t" "${DATE[$i]}"
   [ $F_DOW -eq 1 ] && echo ${DOW[$i]}
   [ $F_TEMP_PHRASE -eq 1 ] && printf "%-5s%-6s  \t%4s\n" ${HI[$i]} "${LO[$i]}" "${PHRASE[$i]}"

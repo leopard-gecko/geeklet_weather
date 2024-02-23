@@ -89,7 +89,7 @@ fi
 
 # 時刻・気温・降水確率・雨量・風速・天気を配列変数として取得
 _IFS="$IFS";IFS=$'\n'
-HOUR_TIME=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep 'class="date"' | grep 'span' | sed -e 's/<span>//g' -e 's/<\/span>//g' | sed -e 's/<[^>]*>//g'))
+HOUR_TIME=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A2 'class="date"' | grep 'div' | sed -e 's/<[^>]*>//g'))
 HOUR_TEMP=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep 'class="temp metric"'| sed -e 's/<[^>]*>//g' | cut -d\& -f1 | sed -E s/$/$JFNT/))
 HOUR_PRECIP=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -A2 '<div class="precip">' | grep \% | grep -v '\-\-'))
 HOUR_RAIN=($(echo "$WEATHER_DATA0" "$WEATHER_DATA1" | grep -e '<div class="hourly-content-container">' -e ">$LOCALE_RAIN<" | tr -d '\t' | tr -d '\n' | perl -pe 's/<div class="hourly-content-container">/\n /g' | sed '1d' | sed "s/$LOCALE_RAIN//g" | sed -e 's/<[^>]*>//g'))

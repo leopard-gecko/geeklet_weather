@@ -11,9 +11,10 @@ COLOR_CP='40;37'
 # 元データ取得
 USER_AGENT='Mozilla/5.0 (Macintosh; Intel Mac OS X)'
 WEATHER_DATA=$(curl -A "$USER_AGENT" --silent $WEATHER_URL)
-LA_DATA=$(echo "$WEATHER_DATA" | grep -A7 'inline-cta-banner looking-ahead' | tr -d '\t')
-LOCALE_LA=$(echo "$LA_DATA" | grep -A1 'banner-header' | sed -n 2p)
+LA_DATA=$(echo "$WEATHER_DATA" | grep -A3 'local-forecast-summary' | tr -d '\t')
+LA_TITLE=$(echo "$LA_DATA" | grep '<h2>' | sed 's/<[^>]*>//g' | tr -d '\t' | ruby -pe 'gsub(/&#[xX]([0-9a-fA-F]+);/) { [$1.to_i(16)].pack("U") }')
+LA_PHRASE=$(echo "$LA_DATA" | grep '<p>' | sed 's/<[^>]*>//g' | tr -d '\t' | ruby -pe 'gsub(/&#[xX]([0-9a-fA-F]+);/) { [$1.to_i(16)].pack("U") }')
 
-# Looking aheadを取得して表示
-[ -n "$LOCALE_LA" ] && echo $(printf "\033[0;${COLOR_CP}m")$LOCALE_LA:$(printf "\033[0m") 
-echo "$LA_DATA" | grep -A1 'banner-text' | sed -n 2p
+# Looking aheadを表示
+[ -n "$LA_TITLE" ] && echo $(printf "\033[0;${COLOR_CP}m")$LA_TITLE:$(printf "\033[0m") $LA_PHRASE
+[ -n "$LA_TITLE" ] && echo "$LA_PHRASE"

@@ -8,7 +8,7 @@ WEATHER_URL=${WEATHER_URL:='https://www.accuweather.com/en/jp/koto-ku/221230/wea
 # 元データ取得
 USER_AGENT='Mozilla/5.0 (Macintosh; Intel Mac OS X)'
 WEATHER_DATA=$(curl -A "$USER_AGENT" --silent $WEATHER_URL)
-DATA_CUR=$(echo "$WEATHER_DATA" | grep -A42 'cur-con-weather-card card-module' | ruby -pe 'gsub(/&#[xX]([0-9a-fA-F]+);/) { [$1.to_i(16)].pack("U") }')
+DATA_CUR=$(echo "$WEATHER_DATA" | grep -A42 'cur-con-weather-card lbar-panel' | ruby -pe 'gsub(/&#[xX]([0-9a-fA-F]+);/) { [$1.to_i(16)].pack("U") }')
 
 # 現在の温度と天気を取得して表示
 TEMP=$(echo "$DATA_CUR" | grep '<div class="temp">' | sed -e 's/<[^>]*>//g' |  tr -d '\t')
