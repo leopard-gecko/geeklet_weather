@@ -11,7 +11,7 @@ COLOR_CP='41;37'
 # 元データ取得
 USER_AGENT='Mozilla/5.0 (Macintosh; Intel Mac OS X)'
 WEATHER_DATA=$(curl -A "$USER_AGENT" --silent $WEATHER_URL)
-DATA_WN=$(echo "$WEATHER_DATA" | grep -A3 '<div class="alert-banner alert-banner-weather">' | grep '<span>' | sed 's/<[^>]*>//g' | tr -d '\t' | ruby -pe 'gsub(/&#[xX]([0-9a-fA-F]+);/) { [$1.to_i(16)].pack("U") }')
+DATA_WN=$(echo "$WEATHER_DATA" | grep 'severe-alert-banner__type' | sed 's/<[^>]*>//g' | tr -d '\t' | ruby -pe 'gsub(/&#[xX]([0-9a-fA-F]+);/) { [$1.to_i(16)].pack("U") }')
 
 # Warningを取得して表示
 echo "$DATA_WN" | sed -E 's/^/'$(printf "\033[0;${COLOR_CP}m")'/' | sed -E 's/$/'$(printf "\033[0m")'/'
