@@ -60,7 +60,9 @@ IFS="$_IFS"
 TITLE_C=$(echo "$WEATHER_TODAY" | grep -A1 'card-header spaced-content' | grep -v 'card-header spaced-content' | perl -pe 's/--\n//g' | sed -e 's/<[^>]*>//g' | tr -d '\t' | char_conv)
 TITLE_D=$(echo "${DATA_TODAY[0]}" | grep '<h2 class="title">' | sed -e 's/<[^>]*>//g' | char_conv)
 TITLE_N=$(echo "${DATA_TODAY[1]}" | grep '<h2 class="title">' | sed -e 's/<[^>]*>//g' | char_conv)
-TITLE_T=$(echo "$WEATHER_DATA" | grep -A2 'weather-tomorrow' | grep 'day' | sed -e 's/<[^>]*>//g' | tr -d '\t' | char_conv)
+TITLE_T_DATE=$(echo "$WEATHER_DATA" | grep -A3 'weather-tomorrow' | grep -A2 '"day"' | grep -v '"day"' | sed -e 's/<[^>]*>//g' | tr -d '\t' | char_conv)
+TITLE_T_DOW=$(echo "$WEATHER_DATA" | grep -A2 'weather-tomorrow' | grep 'day' | sed -e 's/<[^>]*>//g' | tr -d '\t' | char_conv)
+TITLE_T=$(echo "$TITLE_T_DATE""\t""$TITLE_T_DOW")
 TEMP_C=$(echo "$WEATHER_TODAY" | grep 'div class="display-temp"' | sed -e 's/<[^>]*>//g' | tr -d '\t' | char_conv)
 TEMP_D=$(echo "${DATA_TODAY[0]}" | grep -A1 'temperature' | grep -v 'temperature' | sed -e 's/<[^>]*>//g' | sed -e 's/--//g' | tr -d '\n' | char_conv)
 TEMP_N=$(echo "${DATA_TODAY[1]}" | grep -A1 'temperature' | grep -v 'temperature' | sed -e 's/<[^>]*>//g' | sed -e 's/--//g' | tr -d '\n' | char_conv)
@@ -119,7 +121,7 @@ if [ $FLG_N -eq 1 ]; then
   fi
 fi
 if [ $FLG_T -eq 1 ]; then
-  echo "\033[0;${COLOR_CP}m"$TITLE_T"\033[0m"
+  echo "\033[0;${COLOR_CP}m""$TITLE_T""\033[0m"
   [ $F_TEMP_E -eq 1 ] && printf "%-5s / %-5s  \t%s\n" ${TEMP_T[0]} "${TEMP_T[1]}" "$PHRASE_T"
   [ $F_PROB -eq 1 ] && echo ${DATA_T[3]}" \t" | tr -d '\n'
   [ $F_PRECIP -eq 1 ] && echo ${DATA_T[5]}" \t" | tr -d '\n'

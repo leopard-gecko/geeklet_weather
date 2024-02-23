@@ -43,8 +43,8 @@ DATA_WEEK_RAW=$(echo "$WEATHER_DATA" | grep -A40 'class="daily-forecast-card' | 
 _IFS="$IFS";IFS='^'
 DATA_WEEK=($(echo "$DATA_WEEK_RAW" | sed s/--/^/g))
 IFS="$_IFS"
-LOCALE_SAT=$(echo "$DATA_WEEK_RAW" | grep -A4 "?day=$(expr 6 - $(date +%w) + 1)\"" | grep 'dow date' | sed -e 's/<[^>]*>//g')
-LOCALE_SUN=$(echo "$DATA_WEEK_RAW" | grep -A4 "?day=$(expr 7 - $(date +%w) + 1)\"" | grep 'dow date' | sed -e 's/<[^>]*>//g')
+LOCALE_SAT=$(echo "${DATA_WEEK[$(expr 5 - $(date +%w) + 1)]}" | grep 'dow date' | sed -e 's/<[^>]*>//g')
+LOCALE_SUN=$(echo "${DATA_WEEK[$(expr 6 - $(date +%w) + 1)]}" | grep 'dow date' | sed -e 's/<[^>]*>//g')
 LOCALE_PRECIP='☂️'
 
 # 日付、曜日、最高・最低気温、降水確率、天気を表示
@@ -57,7 +57,7 @@ do
   PRECIP[$i]=$(echo "${DATA_WEEK[$(expr $i + $AFTER)]}" | grep -A2 '<div class="precip">' | sed -n '3p')
   PHRASE[$i]=$(echo "${DATA_WEEK[$(expr $i + $AFTER)]}" | grep '<div class="phrase">' | sed -e 's/<[^>]*>//g')
   [ $F_DATE -eq 1 ] && printf "\033[0;${COLOR_DATE}m%5s\033[0m\t" "${DATE[$i]}"
-  [ $F_DOW -eq 1 ] && echo ${DOW[$i]}
+  [ $F_DOW -eq 1 ] && echo ${DOW[$i]} | sed -E s/$LOCALE_SAT/$(printf "\033[0;${COLOR_SAT}m")\&/ | sed -E s/$LOCALE_SUN/$(printf "\033[0;${COLOR_SUN}m")\&/ | sed -E 's/$/'$(printf "\033[0m")'/'
   [ $F_TEMP_PHRASE -eq 1 ] && printf "%-5s%-6s  \t%4s\n" ${HI[$i]} "${LO[$i]}" "${PHRASE[$i]}"
   [ $F_PRECIP -eq 1 ] && echo $LOCALE_PRECIP: ${PRECIP[$i]}
   for (( m=0; m < $NLF; ++m)); do echo; done
