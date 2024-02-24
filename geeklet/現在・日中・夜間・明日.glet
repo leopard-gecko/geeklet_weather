@@ -66,7 +66,7 @@ TITLE_C=$(echo "$WEATHER_TODAY" | grep -A1 'card-header spaced-content' | grep -
 TITLE_D=$(echo "${DATA_TODAY[0]}" | grep '&lt;h2 class="title"&gt;' | sed -e 's/&lt;[^&gt;]*&gt;//g' | char_conv)
 TITLE_N=$(echo "${DATA_TODAY[1]}" | grep '&lt;h2 class="title"&gt;' | sed -e 's/&lt;[^&gt;]*&gt;//g' | char_conv)
 TITLE_T_DATE=$(echo "$WEATHER_DATA" | grep -A3 'weather-tomorrow' | grep -A2 '"day"' | grep -v '"day"' | sed -e 's/&lt;[^&gt;]*&gt;//g' | tr -d '\t' | char_conv)
-TITLE_T_DOW=$(echo "$WEATHER_DATA" | grep -A2 'weather-tomorrow' | grep 'day' | sed -e 's/&lt;[^&gt;]*&gt;//g' | tr -d '\t' | char_conv)
+TITLE_T_DOW=$(echo "$WEATHER_DATA" | grep -A2 'weather-tomorrow' | grep '"day"' | sed -e 's/&lt;[^&gt;]*&gt;//g' | tr -d '\t' | char_conv)
 TITLE_T=$(echo "$TITLE_T_DATE""\t""$TITLE_T_DOW")
 TEMP_C=$(echo "$WEATHER_TODAY" | grep 'div class="display-temp"' | sed -e 's/&lt;[^&gt;]*&gt;//g' | tr -d '\t' | char_conv)
 TEMP_D=$(echo "${DATA_TODAY[0]}" | grep -A1 'temperature' | grep -v 'temperature' | sed -e 's/&lt;[^&gt;]*&gt;//g' | sed -e 's/--//g' | tr -d '\n' | char_conv)
