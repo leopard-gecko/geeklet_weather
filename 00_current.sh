@@ -8,12 +8,12 @@ WEATHER_URL=${WEATHER_URL:='https://www.accuweather.com/en/jp/koto-ku/221230/wea
 # 元データ取得
 USER_AGENT='Mozilla/5.0 (Macintosh; Intel Mac OS X)'
 WEATHER_DATA=$(curl -A "$USER_AGENT" --silent $WEATHER_URL)
-DATA_CUR=$(echo "$WEATHER_DATA" | grep -A42 'cur-con-weather-card lbar-panel' | ruby -pe 'gsub(/&#[xX]([0-9a-fA-F]+);/) { [$1.to_i(16)].pack("U") }')
+DATA_CUR=$(echo "$WEATHER_DATA" | grep -A42 'lbar-panel' | ruby -pe 'gsub(/&#[xX]([0-9a-fA-F]+);/) { [$1.to_i(16)].pack("U") }')
 
 # 現在の温度と天気を取得して表示
-TEMP=$(echo "$DATA_CUR" | grep '<div class="temp">' | sed -e 's/<[^>]*>//g' |  tr -d '\t')
-PHRASE=$(echo "$DATA_CUR" | grep '<span class="phrase">' | sed -e 's/<[^>]*>//g' |  tr -d '\t')
-echo $TEMP $PHRASE
+TEMP_CUR=$(echo "$DATA_CUR" | grep '<div class="temp">' | sed -e 's/<[^>]*>//g' |  tr -d '\t')
+PHRASE_CUR=$(echo "$DATA_CUR" | grep '<span class="phrase">' | sed -e 's/<[^>]*>//g' |  tr -d '\t')
+echo $TEMP_CUR $PHRASE_CUR
 
 # 天気アイコンのナンバーを取得し画像を保存
 ICON_CUR=$(printf "%02d" $(echo "$DATA_CUR" | grep 'class="weather-icon"' | awk -F'weathericons/' '{print $2}' | cut -f 1 -d "."))
