@@ -73,7 +73,7 @@ PHRASE_C=$(echo "$DATA_CUR" | grep '<span class="phrase">' | sed -e 's/<[^>]*>//
 PHRASE_D=$(echo "${DATA_TODAY[0]}" | grep 'phrase' | sed -e 's/<[^>]*>//g' | char_conv)
 PHRASE_N=$(echo "${DATA_TODAY[1]}" | grep 'phrase' | sed -e 's/<[^>]*>//g' | char_conv)
 #PHRASE_T=$(echo "$WEATHER_TOMORROW" | grep -m1 '<div class="phrase">' | sed -e 's/<[^>]*>//g' |  tr -d '\t' | char_conv)
-PHRASE_T=$(echo "$WEATHER_DATA" | grep -A16 'weather-tomorrow' | grep -m1 'class="phrase"' | sed -e 's/<[^>]*>//g' | tr -d '\t' | char_conv)
+PHRASE_T=$(echo "$WEATHER_DATA" | grep -A16 'weather-tomorrow' | grep -A1 'class="phrase"' | grep -v 'class="phrase"'  | sed -e 's/<[^>]*>//g' | tr -d '\t' | char_conv)
 
 ICON_CUR=$(printf "%02d" $(echo "$WEATHER_DATA" | grep '<svg class="weather-icon"' | awk -F'weathericons/' '{print $2}' | cut -f 1 -d "."))
 ICON_D=$(printf "%02d\n" $(echo "${DATA_TODAY[0]}" | grep 'svg class="icon'  | awk -F'weathericons/' '{print $2}' | cut -f 1 -d "."))
